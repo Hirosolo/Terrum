@@ -30,11 +30,11 @@ interface PropertyWithNFTs {
 
 export function HarvestModal({ onClose, availableToClaim }: HarvestModalProps) {
   const { address: userAddress } = useAccount();
-  const { writeContract, data: hash, isPending, error } = useWriteContract();
+  const { writeContract, data: hash } = useWriteContract();
   const [properties, setProperties] = useState<PropertyWithNFTs[]>([]);
   const [isScanning, setIsScanning] = useState(true);
 
-  const { isLoading: isConfirming, isSuccess: isConfirmed } =
+  const { isSuccess: isConfirmed } =
     useWaitForTransactionReceipt({
       hash,
     });
@@ -130,14 +130,7 @@ export function HarvestModal({ onClose, availableToClaim }: HarvestModalProps) {
     });
   };
 
-  const harvestAll = () => {
-    const firstIncomplete = properties.find(
-      (p) => !p.isComplete && !p.isHarvesting
-    );
-    if (firstIncomplete) {
-      harvestFromProperty(firstIncomplete.address);
-    }
-  };
+
 
   return (
     <motion.div
@@ -178,7 +171,7 @@ export function HarvestModal({ onClose, availableToClaim }: HarvestModalProps) {
           </div>
         ) : properties.length === 0 ? (
           <div className="text-center py-8">
-            <p className="text-gray-600">You don't own any NFTs yet</p>
+            <p className="text-gray-600">You don&apos;t own any NFTs yet</p>
             <p className="text-sm text-gray-500 mt-2">
               Visit the Investment page to purchase property NFTs
             </p>
@@ -191,7 +184,7 @@ export function HarvestModal({ onClose, availableToClaim }: HarvestModalProps) {
               </p>
             </div>
 
-            {properties.map((property, index) => (
+            {properties.map((property) => (
               <div key={property.address} className="border rounded-lg p-3 bg-gray-50">
                 <div className="flex justify-between items-center">
                   <div className="flex-1">
