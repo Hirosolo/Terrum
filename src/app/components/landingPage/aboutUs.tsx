@@ -82,7 +82,7 @@ export default function AboutUs() {
               viewport={{ once: true, margin: "-100px" }}
               transition={{ duration: 0.6, delay: 0.2 }}
             >
-              At LandZen, we were founded on a simple belief: the wealth-building
+              At Terrum, we were founded on a simple belief: the wealth-building
               power of real estate should be accessible to everyone, not just a
               select few. We saw a world of ambitious individuals locked out of
               one of the most stable investment classes. Our mission is to tear

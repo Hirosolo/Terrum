@@ -20,7 +20,7 @@ export default function MarketplaceSearchBar() {
           alt="Logo"
           className="h-12 w-13 cursor-pointer border-none"
         />
-        <a onClick={() => (window.location.href = "/")} className="pl-0 mr-0 text-green font-bold px-2.5 text-2xl hover:cursor-pointer">Landzen</a>
+        <a onClick={() => (window.location.href = "/")} className="pl-0 mr-0 text-green font-bold px-2.5 text-2xl hover:cursor-pointer">Terrum</a>
       </div>
 
       {/* Navigation + Wallet */}

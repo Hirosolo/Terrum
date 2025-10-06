@@ -6,19 +6,19 @@ import { motion, AnimatePresence } from "framer-motion";
 
 const faqs = [
   {
-    question: "What is LandZen?",
+    question: "What is Terrum?",
     answer:
-      "LandZen is a Real-World Asset (RWA) platform that fractionalizes real estate using Investment NFTs. Each NFT represents direct ownership in a property, entitling holders to monthly rental income and a share of the property’s appreciation value.",
+      "Terrum is a Real-World Asset (RWA) platform that fractionalizes real estate using Investment NFTs. Each NFT represents direct ownership in a property, entitling holders to monthly rental income and a share of the property’s appreciation value.",
   },
   {
     question: "How does the Investment NFT model work?",
     answer:
-      "LandZen acquires an income-generating property. We issue a limited series of NFTs representing fractional ownership (e.g., 20 NFTs for a $20,000 property). Holders receive monthly rental income proportional to their stake. If the property value rises, NFT holders benefit from capital appreciation.",
+      "Terrum acquires an income-generating property. We issue a limited series of NFTs representing fractional ownership (e.g., 20 NFTs for a $20,000 property). Holders receive monthly rental income proportional to their stake. If the property value rises, NFT holders benefit from capital appreciation.",
   },
   {
     question: "What happens if the project fails?",
     answer:
-      "Since LandZen is property-backed, your investment is tied to a real, tangible asset. If the project fails, the property will be sold on the market, and proceeds will be distributed proportionally to NFT holders. This ensures investors’ capital is supported by the underlying real estate, not just a digital promise.",
+      "Since Terrum is property-backed, your investment is tied to a real, tangible asset. If the project fails, the property will be sold on the market, and proceeds will be distributed proportionally to NFT holders. This ensures investors’ capital is supported by the underlying real estate, not just a digital promise.",
   },
   {
     question: "What do I gain as an NFT holder?",
@@ -36,12 +36,12 @@ const faqs = [
       "Yes. NFTs can be traded on secondary marketplaces, giving investors liquidity. You are not locked in until maturity.",
   },
   {
-    question: "What types of properties does LandZen focus on?",
+    question: "What types of properties does Terrum focus on?",
     answer:
-      "LandZen targets income-generating assets with stable demand, such as residential rentals, student housing, vacation rentals, and commercial rental units.",
+      "Terrum targets income-generating assets with stable demand, such as residential rentals, student housing, vacation rentals, and commercial rental units.",
   },
   {
-    question: "Why should I choose LandZen?",
+    question: "Why should I choose Terrum?",
     answer:
       "Low entry point: Invest in real estate with just one NFT. Asset-backed security: Each NFT is tied to a real property, ensuring tangible value. Recurring income: Monthly rental payouts. Liquidity: Trade NFTs freely in secondary markets. Transparency: Blockchain ensures verifiable ownership and cashflows.",
   },

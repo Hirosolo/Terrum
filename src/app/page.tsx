@@ -212,24 +212,6 @@ export default function LandingPage() {
         </div>
       )}
 
-      {/* Sponsor */}
-      <section id="sponsor" className="px-6 sm:px-12 py-12 text-center">
-        <h2 className="text-2xl font-semibold mb-10 text-green font-bold">
-          Sponsored By
-        </h2>
-        <LogoLoop
-          logos={imageLogos}
-          speed={120}
-          direction="left"
-          logoHeight={75}
-          gap={60}
-          pauseOnHover={false}
-          scaleOnHover={false}
-          fadeOut={false}
-          ariaLabel="Technology partners"
-        />
-      </section>
-
       {/* Footer */}
       <footer className="bg-darkGreen text-beige-100 py-16">
         <div className="container mx-auto px-6 sm:px-12">
@@ -252,8 +234,8 @@ export default function LandingPage() {
                 </li>
                 <li className="flex items-center gap-2">
                   <span>📧</span>
-                  <a href="mailto:contact@landzen.com" className="hover:text-green">
-                    contact@landzen.com
+                  <a href="mailto:contact@terrum.com" className="hover:text-green">
+                    contact@terrum.com
                   </a>
                 </li>
                 <li className="flex items-center gap-2">
@@ -305,7 +287,7 @@ export default function LandingPage() {
 
           {/* Bottom Bar */}
           <div className="mt-12 pt-8 border-t border-beige-100/20 text-sm text-center opacity-80">
-            <p>© 2025 Landzen. All rights reserved.</p>
+            <p>© 2025 Terrum. All rights reserved.</p>
           </div>
         </div>
       </footer>
