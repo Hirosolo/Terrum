@@ -78,8 +78,8 @@ export default function DashBoardPropertyCard({
       <div className="relative">
         <Image
           className="w-full h-60 object-cover"
-          src="/image-property.png"
-          alt="Property"
+          src={property.image || "/image-property.png"}
+          alt={`${propertyName} Property Image`}
           width={400}
           height={240}
         />

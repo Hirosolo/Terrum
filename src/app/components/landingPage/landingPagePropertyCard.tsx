@@ -2,6 +2,7 @@
 
 import { PropertyData, useGetTokenStats } from "@/lib/hooks";
 import { formatUSDTSafe, toBigInt } from "@/lib/utils";
+import { getPropertyMetadata } from "@/lib/contracts";
 import Image from "next/image";
 
 type PropertyCardProps = {
@@ -13,6 +14,9 @@ export default function LandingPagePropertyCard({
   property,
   onBuy,
 }: PropertyCardProps) {
+  // Get property metadata for diverse display
+  const metadata = getPropertyMetadata(property.contractAddress);
+
   // Get real-time token statistics from Land contract
   const { data: tokenStats } = useGetTokenStats(property.contractAddress);
 
@@ -40,8 +44,8 @@ export default function LandingPagePropertyCard({
       <div className="relative select-none">
         <Image
           className="w-full h-60 object-cover pointer-events-none"
-          src="/image-property.png"
-          alt="Property"
+          src={metadata.image}
+          alt={`${metadata.name} Property`}
           width={400}
           height={240}
           draggable={false}
@@ -63,7 +67,7 @@ export default function LandingPagePropertyCard({
             <path d="M12 21c4.97-4.97 8-8.03 8-11.5A8 8 0 004 9.5C4 13 7.03 16.03 12 21z" />
             <circle cx="12" cy="9.5" r="2.5" />
           </svg>
-          Ho Chi Minh
+          {metadata.location}
         </a>
       </div>
 

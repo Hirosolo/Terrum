@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { useRealPropertyData } from "./useRealPropertyData";
 import { useIsNFTListed } from "./useNFTListingStatus";
 import DashBoardPropertyCard from "./dashBoardPropertyCard";
+import { getPropertyMetadata } from "@/lib/contracts";
 import type { PropertyData } from "@/lib/hooks";
 
 interface IndividualNFTCardProps {
@@ -15,30 +16,6 @@ interface IndividualNFTCardProps {
   onSelect: (id: string) => void;
   onListForSale: (nftContract: string, tokenId: number, name: string, currentPrice: bigint) => void;
   onCancelListing: (nftContract: string, tokenId: number, name: string) => void;
-}
-
-interface RawPropertyData {
-  id: string | number;
-  contractAddress?: string;
-  propertyOwner?: string;
-  name?: string;
-  propertyName?: string;
-  propertySymbol?: string;
-  apy?: number;
-  value?: number;
-  totalAmount?: number;
-  totalSupply?: number;
-  remainingToMint?: number;
-  yieldPerBlock?: string;
-  yieldReserve?: string;
-  propertyType?: string;
-  type?: string;
-  propertyTypeName?: string;
-  status?: string;
-  createdAt?: string;
-  floor?: number;
-  pricePerShare?: number;
-  listed?: string;
 }
 
 // Helper: convert real data to PropertyData format expected by the card
@@ -70,6 +47,9 @@ function toPropertyData(
   // Convert to USDT wei format (18 decimals) for consistency with other components
   const toUSDTWei = (amount: number) => BigInt(Math.round(amount * 1e18));
 
+  // Get property metadata for diverse images and info
+  const metadata = getPropertyMetadata(p.contractAddress || "");
+
   return {
     id: (typeof p.id === "string" ? parseInt(p.id) : p.id || 0) + tokenIndex, // Unique ID for each NFT
     contractAddress: p.contractAddress || "", // Use real contract address
@@ -99,6 +79,12 @@ function toPropertyData(
     availabilityPercentage: p.totalSupply
       ? ((p.remainingToMint || 0) / (p.totalSupply || 1)) * 100
       : 100,
+    // Add enhanced metadata
+    image: metadata.image,
+    city: metadata.location,
+    description: metadata.description,
+    features: metadata.features,
+    galleryImages: metadata.galleryImages,
   };
 }
 

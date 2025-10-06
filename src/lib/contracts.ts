@@ -34,6 +34,109 @@ export const PROPERTY_TYPES: { [key: number]: { name: string; color: string } } 
   4: { name: "Hospitality", color: "bg-orange-500" },
 };
 
+// Property metadata mapping with diverse images and information
+export const PROPERTY_METADATA: { [key: string]: { 
+  name: string; 
+  location: string;
+  type: string;
+  image: string;
+  galleryImages: string[];
+  description: string;
+  features: string[];
+} } = {
+  "0xf476D12Dd460ee9D48ED7d95234D8F2a5C894e99": {
+    name: "Saigon Pearl Residence",
+    location: "Binh Thanh District, Ho Chi Minh City",
+    type: "Luxury Apartment Complex",
+    image: "/image-Property1.jpg",
+    galleryImages: ["/image-Property1.jpg", "/image-Property2.jpg", "/image-Property3.jpg"],
+    description: "Premium waterfront living in the heart of Saigon with stunning river views, world-class amenities, and direct access to the city's financial district.",
+    features: ["River View", "Swimming Pool", "Gym", "24/7 Security", "Shopping Mall Access"]
+  },
+  "0xFC7cf639b8168Ce8715F788887B731A244c5885E": {
+    name: "Hanoi Horizon Towers",
+    location: "Cau Giay District, Hanoi",
+    type: "Modern Residential Tower",
+    image: "/image-Property4.jpg",
+    galleryImages: ["/image-Property4.jpg", "/image-Property5.jpg", "/image-Property6.jpg"],
+    description: "Contemporary high-rise living in Hanoi's dynamic business district, featuring smart home technology and panoramic city views.",
+    features: ["Smart Home", "City View", "Conference Center", "Rooftop Garden", "Metro Access"]
+  },
+  "0x4A0e3FCADBA7c97F9AC10aB7Bc9B32a3eF754b76": {
+    name: "Da Nang Marina Bay",
+    location: "Ngu Hanh Son District, Da Nang",
+    type: "Beachfront Resort Complex",
+    image: "/image-Property7.jpg",
+    galleryImages: ["/image-Property7.jpg", "/image-Property8.jpg", "/image-Property9.jpg"],
+    description: "Luxury beachfront resort complex with private marina, offering unparalleled coastal living and investment opportunities in Central Vietnam.",
+    features: ["Beach Access", "Private Marina", "Spa & Wellness", "Golf Course", "Restaurant & Bar"]
+  },
+  "0x7Fa2E1f819047033971C9E282148c8744AA9FE3A": {
+    name: "Nha Trang Skyline",
+    location: "Loc Tho Ward, Nha Trang",
+    type: "Premium Beachside Resort",
+    image: "/image-Property10.jpg",
+    galleryImages: ["/image-Property10.jpg", "/image-Property11.jpg", "/image-Property12.jpg"],
+    description: "Iconic beachfront development combining residential luxury with resort amenities, perfectly positioned along Nha Trang's famous coastline.",
+    features: ["Beachfront", "Infinity Pool", "Water Sports", "Spa Services", "Tourist Hub Access"]
+  },
+  "0xb5C684098b5295f131fb50A377cf4FC3831dd8c9": {
+    name: "Mekong Riverside Villas",
+    location: "Can Tho City, Mekong Delta",
+    type: "Eco-Luxury Villa Resort",
+    image: "/image-Property13.jpg",
+    galleryImages: ["/image-Property13.jpg", "/image-Property14.jpg", "/image-Property15.jpg"],
+    description: "Sustainable luxury villas nestled along the Mekong River, offering eco-friendly living with authentic Vietnamese Delta experiences.",
+    features: ["River Access", "Eco-Friendly", "Cultural Tours", "Organic Gardens", "Traditional Architecture"]
+  },
+  "0xf9F560e8EBB7B5Dc3C4AfACF860a98cA44DFe01c": {
+    name: "Hue Imperial Garden",
+    location: "Imperial City, Hue",
+    type: "Heritage Boutique Hotel",
+    image: "/image-Property16.jpg",
+    galleryImages: ["/image-Property16.jpg", "/image-Property17.jpg", "/image-Property18.jpg"],
+    description: "Historically inspired luxury accommodation within walking distance of Hue's Imperial City, blending cultural heritage with modern comfort.",
+    features: ["Historical Location", "Cultural Heritage", "Traditional Gardens", "Royal Cuisine", "UNESCO Site Access"]
+  },
+  "0x19052aC0EF38517C1C4Fcf02CCf37807dcEE864F": {
+    name: "Phu Quoc Oceanfront Estate",
+    location: "Duong To Commune, Phu Quoc Island",
+    type: "Island Paradise Resort",
+    image: "/image-Property19.jpg",
+    galleryImages: ["/image-Property19.jpg", "/image-Property20.jpg", "/image-Property21.jpg"],
+    description: "Exclusive island resort development on Vietnam's largest island, featuring pristine beaches, tropical landscapes, and world-class facilities.",
+    features: ["Private Beach", "Tropical Resort", "Water Villa", "Island Activities", "Sunset Views"]
+  },
+  "0xB2a5Aa1629C176F97Dc5fA117D9075Ac4a3fFC63": {
+    name: "Sapa Highland Retreat",
+    location: "Sapa Town, Lao Cai Province",
+    type: "Mountain Eco Resort",
+    image: "/image-Property22.jpg",
+    galleryImages: ["/image-Property22.jpg", "/image-Property23.jpg", "/image-Property24.jpg"],
+    description: "Mountain retreat resort offering breathtaking terraced landscape views, authentic ethnic culture experiences, and cool highland climate.",
+    features: ["Mountain Views", "Terraced Landscapes", "Cultural Immersion", "Trekking Access", "Cool Climate"]
+  }
+};
+
+// Helper function to get property image by address
+export const getPropertyImage = (propertyAddress: string): string => {
+  const metadata = PROPERTY_METADATA[propertyAddress];
+  return metadata?.image || "/image-property.png"; // fallback to default
+};
+
+// Helper function to get property metadata by address
+export const getPropertyMetadata = (propertyAddress: string) => {
+  return PROPERTY_METADATA[propertyAddress] || {
+    name: "Unknown Property",
+    location: "Vietnam",
+    type: "Real Estate",
+    image: "/image-property.png",
+    galleryImages: ["/image-property.png"],
+    description: "Premium Vietnamese real estate investment opportunity.",
+    features: ["Investment Property"]
+  };
+};
+
 // Helper functions for USDT formatting (18 decimals for lzUSDT)
 export const formatUSDT = (amount: bigint): string => {
   const value = Number(amount) / 1e18;

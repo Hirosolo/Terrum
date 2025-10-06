@@ -1,9 +1,16 @@
+import { getPropertyMetadata, PROPERTY_ADDRESSES } from "@/lib/contracts";
+
 type PageProps = {
   params: { id: string };
 };
 
 export default function PropertyInfo({ params }: PageProps) {
   const { id } = params;
+  
+  // Get property address by ID (assuming ID is index into PROPERTY_ADDRESSES)
+  const propertyIndex = parseInt(id) - 1;
+  const propertyAddress = PROPERTY_ADDRESSES[propertyIndex] || PROPERTY_ADDRESSES[0];
+  const metadata = getPropertyMetadata(propertyAddress);
   return (
     <div className="min-h-screen bg-beige-100">
       <div className="max-w-7xl mx-auto p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -11,25 +18,21 @@ export default function PropertyInfo({ params }: PageProps) {
       <div className="space-y-4">
         {/* Main image */}
         <img
-          src="/image-property.png"
-          alt="Property"
+          src={metadata.image}
+          alt={`${metadata.name} Property`}
           className="w-full h-72 object-cover rounded-xl shadow"
         />
 
         {/* Thumbnails */}
         <div className="grid grid-cols-3 gap-2">
-          <img
-            src="/image-property.png"
-            className="h-24 w-full object-cover rounded-md"
-          />
-          <img
-            src="/image-property.png"
-            className="h-24 w-full object-cover rounded-md"
-          />
-          <img
-            src="/image-property.png"
-            className="h-24 w-full object-cover rounded-md"
-          />
+          {metadata.galleryImages.slice(0, 3).map((image, index) => (
+            <img
+              key={index}
+              src={image}
+              alt={`${metadata.name} Gallery ${index + 1}`}
+              className="h-24 w-full object-cover rounded-md"
+            />
+          ))}
         </div>
 
         {/* Location + description */}
@@ -50,11 +53,30 @@ export default function PropertyInfo({ params }: PageProps) {
               />
               <circle cx="12" cy="9.5" r="2.5" />
             </svg>
-            Ho Chi Minh
+            {metadata.location}
           </div>
 
           <p className="text-sm text-gray-700 leading-relaxed border border-gray-400 rounded rounded-md p-2 overflow-hidden">
-            The Vinhomes Grand Park project in District 9 (Thu Duc City) is a
+            {metadata.description}
+          </p>
+          
+          {/* Property Features */}
+          <div className="space-y-2">
+            <h3 className="font-medium text-gray-800">Key Features:</h3>
+            <div className="flex flex-wrap gap-2">
+              {metadata.features.map((feature, index) => (
+                <span 
+                  key={index}
+                  className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full"
+                >
+                  {feature}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <p className="text-sm text-gray-700 leading-relaxed border border-gray-400 rounded rounded-md p-2 overflow-hidden">
+            The {metadata.name} project offers exceptional investment opportunities in Vietnam&apos;s growing real estate market. This premium development provides investors with stable returns through blockchain-based fractional ownership.
             mega-urban park of the investor Vingroup owns a prime location at
             Nguyen Xien & Phuoc Thien arterial streets of Long Thanh My ward –
             District 9 – Thu Duc City – Ho Chi Minh City. Along with hundreds of
@@ -84,10 +106,10 @@ export default function PropertyInfo({ params }: PageProps) {
         {/* Header */}
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold text-gray-900">
-            VINHOMES GRAND PARK
+            {metadata.name.toUpperCase()}
           </h1>
           <span className="text-sm bg-green-100 text-green-600 font-semibold px-2 py-1 rounded">
-            APY 10%
+            APY 5-7%
           </span>
         </div>
 
@@ -139,7 +161,7 @@ export default function PropertyInfo({ params }: PageProps) {
           <div className="grid grid-cols-2 gap-3 text-sm">
             <div className="border border-gray-400 rounded-md p-2">
               <p className="text-gray-500">Type</p>
-              <p className="text-black font-medium">Residential Home</p>
+              <p className="text-black font-medium">{metadata.type}</p>
             </div>
             <div className="border border-gray-400 rounded-md p-2">
               <p className="text-gray-500">Area</p>

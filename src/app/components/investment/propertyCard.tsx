@@ -1,6 +1,7 @@
 "use client";
 import { PropertyData, useGetTokenStats } from "@/lib/hooks";
 import { formatUSDTSafe, toBigInt } from "@/lib/utils";
+import { getPropertyMetadata } from "@/lib/contracts";
 import Image from "next/image";
 import { motion } from "framer-motion";
 
@@ -26,6 +27,9 @@ const getPropertyTypeStyles = (typeName: string): string => {
 };
 
 export default function PropertyCard({ property, onBuy }: PropertyCardProps) {
+  // Get property metadata for diverse display
+  const metadata = getPropertyMetadata(property.contractAddress);
+
   // Debug: log what property type name we're actually receiving
   console.log(
     `PropertyCard for property ${property.id}:`,
@@ -78,8 +82,8 @@ export default function PropertyCard({ property, onBuy }: PropertyCardProps) {
       <div className="relative">
         <Image
           className="w-full h-60 object-cover"
-          src="/image-property.png"
-          alt="Property"
+          src={metadata.image}
+          alt={`${metadata.name} Property`}
           width={400}
           height={240}
         />
@@ -100,7 +104,7 @@ export default function PropertyCard({ property, onBuy }: PropertyCardProps) {
             <path d="M12 21c4.97-4.97 8-8.03 8-11.5A8 8 0 004 9.5C4 13 7.03 16.03 12 21z" />
             <circle cx="12" cy="9.5" r="2.5" />
           </svg>
-          Ho Chi Minh
+          {metadata.location}
         </a>
       </div>
 

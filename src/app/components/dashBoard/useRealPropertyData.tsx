@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { usePropertyBalance, useGetAllProperties } from "@/lib/hooks";
-import { PROPERTY_ADDRESSES } from "@/lib/contracts";
+import { PROPERTY_ADDRESSES, getPropertyMetadata } from "@/lib/contracts";
 
 interface RealPropertyData {
   propertyAddress: string;
@@ -41,11 +41,14 @@ export function useRealPropertyData({
         totalValue: propertyData.totalValue,
       });
 
+      // Get property metadata for diverse display
+      const metadata = getPropertyMetadata(propertyAddress);
+
       // Convert to the expected format used by the original design, using the same data as investment page
       return {
         id: propertyData.id,
-        city: "Ho Chi Minh",
-        name: propertyData.propertyName,
+        city: metadata.location,
+        name: metadata.name,
         value: Math.round(Number(propertyData.totalValue) / 1e18), // Convert from wei to USDT
         earnings: Math.round(
           ((propertyData.apy / 100) * Number(propertyData.sharePrice)) / 1e18
@@ -59,8 +62,8 @@ export function useRealPropertyData({
         ), // Real profit for user's holdings
         status: "Active",
         endDate: "01/01/2026",
-        type: propertyData.propertyTypeName, // Real property type from investment page
-        image: "/image-property.png",
+        type: metadata.type, // Use diverse property type
+        image: metadata.image, // Use diverse property image
         listed: "false",
         floor: Number(propertyData.sharePrice) / 1e18,
         traitFloor: (Number(propertyData.sharePrice) / 1e18) * 1.1,
@@ -69,6 +72,9 @@ export function useRealPropertyData({
         remainingToMint: Number(propertyData.availableShares),
         apy: propertyData.apy, // Use the same APY as investment page!
         rentalYield: propertyData.apy.toFixed(2), // Same as investment page
+        description: metadata.description,
+        features: metadata.features,
+        galleryImages: metadata.galleryImages,
       };
     },
     enabled: !!balance && Number(balance) > 0 && !!allProperties,

@@ -7,40 +7,29 @@ import FilterSidebar from "../components/investment/filterSidebar";
 import DashBoardPropertyCard from "../components/dashBoard/dashBoardPropertyCard";
 import { useActiveListings } from "../components/dashBoard/useMarketplaceListings";
 import { usePurchaseNFT, useApproveUSDT, useCancelListing } from "../components/dashBoard/useMarketplaceHooks";
-import { formatUSDT, parseUSDT, CONTRACT_ADDRESSES } from "@/lib/contracts";
+import { formatUSDT, parseUSDT, CONTRACT_ADDRESSES, getPropertyMetadata, PROPERTY_ADDRESSES } from "@/lib/contracts";
 import { PropertyData } from "@/lib/hooks";
 import { useAccount } from "wagmi";
 import { Toast, useToast } from "@/components/Toast";
 
-// Mock data (replace with API later)
-const properties = [
-  {
-    id: 1,
-    city: "Ho Chi Minh",
-    name: "Saigon Pearl Residence",
-    totalValue: 150000, // $150k property value
-    totalShares: 1250, // Makes each NFT worth $120
-    availableShares: 500,
+// Generate diverse mock data using real property metadata
+const properties = PROPERTY_ADDRESSES.slice(0, 6).map((address, index) => {
+  const metadata = getPropertyMetadata(address);
+  return {
+    id: index + 1,
+    city: metadata.location,
+    name: metadata.name,
+    totalValue: 120000 + (index * 30000), // Varied property values $120k - $270k
+    totalShares: 1000 + (index * 200), // Varied share counts making NFTs ~$120 each
+    availableShares: 200 + (index * 50), // Varied availability
     status: "Active",
-    type: "Residential",
-    image: "/image-property.png",
-    listed: "false",
-    apy: 5.2,
-  },
-  {
-    id: 2,
-    city: "Ho Chi Minh",
-    name: "Empire City Tower",
-    totalValue: 180000, // $180k property value
-    totalShares: 1500, // Makes each NFT worth $120
-    availableShares: 300,
-    status: "Active",
-    type: "Commercial",
-    image: "/image-property.png",
-    listed: "true",
-    apy: 6.8,
-  },
-];
+    type: metadata.type,
+    image: metadata.image,
+    listed: index % 3 === 0 ? "true" : "false", // Some listed, some not
+    apy: 5.0 + (index * 0.5), // Varied APY from 5% to 7.5%
+    contractAddress: address,
+  };
+});
 
 // Map mock to PropertyData for card
 function toPropertyData(p: (typeof properties)[number]): PropertyData {
@@ -76,6 +65,12 @@ function toPropertyData(p: (typeof properties)[number]): PropertyData {
     soldPercentage: Math.round(soldPercentage),
     availabilityPercentage: Math.round(availabilityPercentage),
     apy: p.apy,
+    // Add enhanced metadata
+    image: p.image,
+    city: p.city,
+    description: getPropertyMetadata(p.contractAddress || PROPERTY_ADDRESSES[0]).description,
+    features: getPropertyMetadata(p.contractAddress || PROPERTY_ADDRESSES[0]).features,
+    galleryImages: getPropertyMetadata(p.contractAddress || PROPERTY_ADDRESSES[0]).galleryImages,
   };
 }
 

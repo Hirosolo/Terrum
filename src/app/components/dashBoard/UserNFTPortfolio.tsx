@@ -8,7 +8,7 @@ import {
   usePropertyName,
   useGetTokenStats,
 } from "@/lib/hooks";
-import { PROPERTY_ADDRESSES } from "@/lib/contracts";
+import { PROPERTY_ADDRESSES, getPropertyMetadata } from "@/lib/contracts";
 import { FiSearch } from "react-icons/fi";
 import { ChevronDown } from "lucide-react";
 import Image from "next/image";
@@ -24,6 +24,9 @@ function NFTHolding({
   const { data: balance } = usePropertyBalance(propertyAddress, userAddress);
   const { data: propertyName } = usePropertyName(propertyAddress);
   const { data: tokenStats } = useGetTokenStats(propertyAddress);
+  
+  // Get property metadata for diverse display
+  const metadata = getPropertyMetadata(propertyAddress);
 
   // Don't render if user has no NFTs for this property
   if (!balance || Number(balance) === 0) {
@@ -46,8 +49,8 @@ function NFTHolding({
         <div className="flex items-center gap-4">
           <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
             <Image
-              src="/image-property.png"
-              alt="Property"
+              src={metadata.image}
+              alt={`${metadata.name} Property`}
               width={48}
               height={48}
               className="rounded-lg object-cover"
@@ -55,10 +58,10 @@ function NFTHolding({
           </div>
           <div>
             <h3 className="text-lg font-semibold text-gray-900">
-              {displayName}
+              {metadata.name}
             </h3>
             <p className="text-sm text-gray-500">
-              {propertyAddress.slice(0, 6)}...{propertyAddress.slice(-4)}
+              {metadata.location}
             </p>
           </div>
         </div>
@@ -147,13 +150,19 @@ export default function UserNFTPortfolio() {
       {/* Empty State - if no NFTs found */}
       <div className="bg-gray-50 rounded-xl p-8 text-center">
         <div className="w-16 h-16 mx-auto mb-4 bg-gray-200 rounded-full flex items-center justify-center">
-          <Image
-            src="/image-property.png"
-            alt="No properties"
-            width={32}
-            height={32}
-            className="opacity-50"
-          />
+          <svg
+            className="w-8 h-8 text-gray-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+            />
+          </svg>
         </div>
         <h3 className="text-lg font-semibold text-gray-900 mb-2">
           No NFTs Found

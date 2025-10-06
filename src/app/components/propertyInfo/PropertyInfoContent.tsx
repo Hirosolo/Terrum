@@ -16,6 +16,7 @@ import {
   calculateMonthlyEarnings,
   calculateAnnualEarnings 
 } from "@/lib/utils";
+import { getPropertyMetadata } from "@/lib/contracts";
 import { Toast, useToast } from "@/components/Toast";
 
 type PropertyInfoContentProps = {
@@ -30,6 +31,9 @@ export default function PropertyInfoContent({
   const chainId = useChainId();
   const { switchChain, isPending: isSwitching } = useSwitchChain();
   const { toast, showToast, hideToast } = useToast();
+  
+  // Get property metadata for diverse display
+  const metadata = getPropertyMetadata(property.contractAddress);
   const { investInProperty, isPending, isConfirming, isSuccess, error } =
     usePurchaseShares();
 
@@ -189,21 +193,21 @@ export default function PropertyInfoContent({
         <div className="col-span-2 space-y-4">
           <div className="relative w-full h-80 rounded-2xl overflow-hidden shadow-md">
             <Image
-              src="/image-property.png"
-              alt={`Property ${property.id}`}
+              src={metadata.image}
+              alt={`${metadata.name} Property`}
               layout="fill"
               objectFit="cover"
             />
           </div>
           <div className="grid grid-cols-3 gap-3">
-            {[1, 2, 3].map((i) => (
+            {metadata.galleryImages.slice(0, 3).map((image, i) => (
               <div
                 key={i}
                 className="relative w-full h-28 rounded-xl overflow-hidden shadow"
               >
                 <Image
-                  src={`/image-property.png`}
-                  alt={`Thumbnail ${i}`}
+                  src={image}
+                  alt={`${metadata.name} Gallery ${i + 1}`}
                   layout="fill"
                   objectFit="cover"
                 />

@@ -4,7 +4,7 @@ import { useReadContract, useWriteContract, useWaitForTransactionReceipt } from 
 import { useSwitchChain } from 'wagmi'
 import { useQuery } from '@tanstack/react-query'
 import { LandTokenizerABI, LandABI, MockUSDTABI } from './abis'
-import { CONTRACT_ADDRESSES, PROPERTY_TYPES, PROPERTY_ADDRESSES } from './contracts'
+import { CONTRACT_ADDRESSES, PROPERTY_ADDRESSES, PROPERTY_TYPES, USDT_TOKEN, formatUSDT, parseUSDT, getPropertyMetadata } from "./contracts"
 import { u2uTestnet } from './wagmi'
 
 // Types for property data
@@ -45,6 +45,12 @@ export interface PropertyData {
   soldPercentage: number;
   availabilityPercentage: number;
   apy: number;
+  // Enhanced property metadata
+  image?: string;
+  city?: string;
+  description?: string;
+  features?: string[];
+  galleryImages?: string[];
 }
 
 export interface InvestmentOpportunity {
@@ -212,11 +218,14 @@ export function useGetAllProperties() {
             const propertyTypeData = PROPERTY_TYPES[Number(typedLandType)]
             const propertyTypeName = propertyTypeData?.name || `Type ${Number(typedLandType)}`
             
+            // Get diverse property metadata
+            const metadata = getPropertyMetadata(propertyAddress)
+            
             const propertyData: PropertyData = {
               id: propertyId,
               contractAddress: propertyAddress,
               propertyOwner: CONTRACT_ADDRESSES.DEPLOYER,
-              propertyName: typedPropertyName,
+              propertyName: metadata.name, // Use diverse property name
               propertySymbol: typedPropertySymbol,
               totalValue: typedInitialValue.toString(),
               totalShares: typedMaxSupply.toString(),
@@ -226,13 +235,19 @@ export function useGetAllProperties() {
               yieldPerBlock: typedYieldRate.toString(),
               yieldReserve: "0",
               propertyType: typedLandType.toString(),
-              propertyTypeName: propertyTypeName,
+              propertyTypeName: metadata.type, // Use diverse property type
               isActive: true, // All our deployed properties are active
               createdAt: Date.now().toString(),
               sharePrice: sharePrice.toString(),
               soldPercentage,
               availabilityPercentage,
-              apy
+              apy,
+              // Add enhanced metadata
+              image: metadata.image,
+              city: metadata.location,
+              description: metadata.description,
+              features: metadata.features,
+              galleryImages: metadata.galleryImages,
             }
             
             console.log(`Property ${propertyId} processed:`, {

@@ -5,6 +5,7 @@ import { useGetAllProperties, usePurchaseShares } from "@/lib/hooks";
 import { useAccount } from "wagmi";
 import type { PropertyData } from "@/lib/hooks";
 import { formatUSDTSafe, toBigInt } from "@/lib/utils";
+import { getPropertyMetadata } from "@/lib/contracts";
 
 type PropertyInfoContentProps = {
   propertyId: number | string;
@@ -28,6 +29,9 @@ export default function PropertyInfoContent({
 
   // Prefer passed-in property data from the clicked card; fallback to hook data
   const property = propertyData ?? properties?.find((p) => p.id === propertyId);
+
+  // Get property metadata for diverse display
+  const metadata = property ? getPropertyMetadata(property.contractAddress) : null;
 
   if ((isLoading && !propertyData) || !property) {
     return (
@@ -80,21 +84,21 @@ export default function PropertyInfoContent({
         <div className="col-span-2 space-y-4">
           <div className="relative w-full h-80 rounded-2xl overflow-hidden shadow-md">
             <Image
-              src="/image-property.png"
-              alt={`Property #${property.id}`}
+              src={metadata?.image || "/image-property.png"}
+              alt={`${metadata?.name || property.propertyName} Property`}
               layout="fill"
               objectFit="cover"
             />
           </div>
           <div className="grid grid-cols-3 gap-3">
-            {[1, 2, 3].map((i) => (
+            {(metadata?.galleryImages || ["/image-property.png", "/image-property.png", "/image-property.png"]).slice(0, 3).map((image, i) => (
               <div
                 key={i}
                 className="relative w-full h-28 rounded-xl overflow-hidden shadow"
               >
                 <Image
-                  src={`/image-property.png`}
-                  alt={`Thumbnail ${i}`}
+                  src={image}
+                  alt={`${metadata?.name || property.propertyName} Gallery ${i + 1}`}
                   layout="fill"
                   objectFit="cover"
                 />
