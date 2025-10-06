@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useAccount } from "wagmi";
-import { usePropertyBalance, useGetAllProperties } from "@/lib/hooks";
+import { usePropertyBalance, useGetAllProperties, type PropertyData } from "@/lib/hooks";
 import { PROPERTY_ADDRESSES } from "@/lib/contracts";
 
 export function useUserPortfolioStats() {
@@ -61,7 +61,7 @@ export function useUserPortfolioStats() {
           if (nftBalance > 0) {
             // Find property data from allProperties
             const property = allProperties.find(
-              (p: any) =>
+              (p: PropertyData) =>
                 p.contractAddress.toLowerCase() ===
                 propertyAddress.toLowerCase()
             );
