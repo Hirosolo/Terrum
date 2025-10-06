@@ -6,25 +6,6 @@
 
 <h3 align="center">Unlocking Real Estate Investment for All</h3>
 
-## 🎬 Platform Preview
-
-Experience Vietnam's premier real estate tokenization platform in action:
-
-### 🏡 Property Portfolio
-Explore our diverse range of tokenized Vietnamese properties from luxury urban developments to scenic highland retreats.
-
-### 💼 Investment Dashboard  
-Track your real estate NFT holdings, monitor monthly yields, and manage your fractional property portfolio.
-
-### 🛒 NFT Marketplace
-Buy and sell property shares instantly with our decentralized marketplace featuring real-time pricing and yield data.
-
-### 💰 Yield Distribution
-Watch automatic rental income distribution to NFT holders through transparent smart contract mechanisms.go-landzen.png" alt="Terrum Logo" width="200"/>
-</div>
-
-<h3 align="center">Unlocking Real Estate Investment for All</h3>
-
 **Terrum is a revolutionary real estate tokenization platform that transforms how people invest in Vietnamese property markets.** By fractionalizing premium real estate assets into NFTs, we make high-value property investment accessible to everyone. Each property is tokenized into tradeable shares, allowing investors to own fractions of luxury real estate and earn rental yields automatically through smart contracts.
 
 We bridge the gap between traditional real estate investment and decentralized finance, offering property ownership, yield generation, and liquid trading – all powered by blockchain technology on the U2U network.
