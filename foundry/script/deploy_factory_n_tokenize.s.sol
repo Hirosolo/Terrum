@@ -42,8 +42,8 @@ contract DeployFactoryWithProperties is Script {
         ];
         
         uint256[8] memory values;
-        values[0] = 150000e18; values[1] = 180000e18; values[2] = 120000e18; values[3] = 200000e18;
-        values[4] = 175000e18; values[5] = 190000e18; values[6] = 110000e18; values[7] = 160000e18;
+        values[0] = 150000 * 1e18; values[1] = 180000 * 1e18; values[2] = 120000 * 1e18; values[3] = 200000 * 1e18;
+        values[4] = 175000 * 1e18; values[5] = 190000 * 1e18; values[6] = 110000 * 1e18; values[7] = 160000 * 1e18;
         
         uint256[8] memory supplies;
         supplies[0] = 500; supplies[1] = 600; supplies[2] = 400; supplies[3] = 800;
@@ -60,9 +60,9 @@ contract DeployFactoryWithProperties is Script {
             uint256 apy = 5 + (i % 3); // 5%, 6%, 7%
             uint256 yieldRate = calculateYieldRate(values[i], supplies[i], apy);
             
-            // Each NFT starts 100 blocks after the previous one, with minimum 100 blocks delay
-            // This gives people time to mint before yield starts
-            uint256 startBlock = block.number + 100 + (i * 100);
+            // Each NFT starts 1000 blocks after the previous one, with minimum 1000 blocks delay
+            // This gives people ~16-17 minutes between each property launch
+            uint256 startBlock = block.number + 1000 + (i * 1000);
             
             address propertyAddress = tokenizer.tokenizeProperty(
                 usdtAddress,
