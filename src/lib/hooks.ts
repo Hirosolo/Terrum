@@ -673,3 +673,18 @@ export function useUserNFTCount(propertyAddress: string, userAddress?: string) {
     },
   })
 }
+
+// Hook to get available yield for a user from a specific property
+export function useGetAvailableYield(propertyAddress: string, userAddress?: string) {
+  return useReadContract({
+    abi: LandABI,
+    address: propertyAddress as `0x${string}`,
+    functionName: 'getAvailableYield',
+    args: userAddress ? [userAddress as `0x${string}`] : undefined,
+    chainId: u2uTestnet.id,
+    query: {
+      enabled: !!propertyAddress && !!userAddress,
+      refetchInterval: 5000, // Refetch every 5 seconds for real-time updates
+    },
+  })
+}

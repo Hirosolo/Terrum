@@ -76,10 +76,9 @@ export default function StatsCards({
         </p>
         <button
           onClick={() => setShowHarvestModal(true)}
-          disabled={availableToClaim <= 0}
-          className="mt-3 text-sm text-green bg-beige-100 rounded-md border px-3 py-2 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="mt-3 text-sm text-green bg-beige-100 rounded-md border px-3 py-2 hover:bg-gray-50 transition-colors"
         >
-          Harvest All
+          Harvest
         </button>
 
         {/* Harvest Modal */}

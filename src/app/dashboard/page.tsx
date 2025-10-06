@@ -47,9 +47,9 @@ export default function Dashboard() {
             transition={{ delay: 0.4, duration: 0.5 }}
           >
             <StatsCards
-              rwaBalance="0"
-              rentalYield="7.165"
-              activeProperty="9"
+              rwaBalance={portfolioStats?.availableToClaim?.toString() ?? "0"}
+              rentalYield={portfolioStats?.monthlyEarnings?.toString() ?? "120.50"}
+              activeProperty={portfolioStats?.totalInvestment?.toString() ?? "0"}
               autoRedeem={autoRedeem}
               onAutoRedeemChange={setAutoRedeem}
             />

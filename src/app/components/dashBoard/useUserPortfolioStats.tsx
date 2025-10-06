@@ -12,27 +12,28 @@ export function useUserPortfolioStats() {
   return useQuery({
     queryKey: ["userPortfolioStats", userAddress, allProperties],
     queryFn: async () => {
-      if (!userAddress || !allProperties) {
-        return {
-          totalInvestment: 0,
-          availableToClaim: 0,
-          totalBalance: 0,
-          monthlyEarnings: 7.165, // Fixed mock number as requested
-        };
-      }
+      try {
+        if (!userAddress || !allProperties) {
+          return {
+            totalInvestment: 0,
+            availableToClaim: 0,
+            totalBalance: 0,
+            monthlyEarnings: 120.50, // Mock monthly earnings
+          };
+        }
 
-      let totalInvestment = 0;
-      let availableToClaim = 0;
+        let totalInvestment = 0;
+        let availableToClaim = 0;
 
-      // Import viem client to read balances directly
-      const { createPublicClient, http } = await import("viem");
-      const { baseSepolia } = await import("@/lib/wagmi");
-      const { LandABI } = await import("@/lib/abis");
+        // Import viem client to read balances directly
+        const { createPublicClient, http } = await import("viem");
+        const { u2uTestnet } = await import("@/lib/wagmi");
+        const { LandABI } = await import("@/lib/abis");
 
-      const client = createPublicClient({
-        chain: baseSepolia,
-        transport: http("https://sepolia.base.org"),
-      });
+        const client = createPublicClient({
+          chain: u2uTestnet,
+          transport: http("https://rpc-nebulas-testnet.uniultra.xyz"),
+        });
 
       // Get balance for each property and calculate stats
       for (const propertyAddress of PROPERTY_ADDRESSES) {
@@ -61,48 +62,53 @@ export function useUserPortfolioStats() {
               const investmentValue = sharePrice * nftBalance;
               totalInvestment += investmentValue;
 
-              // Get yield rate and lastWithdraw for dynamic yield calculation
-              const [yieldRateResult, lastWithdrawResult, currentBlockResult] =
-                await Promise.all([
-                  client.readContract({
-                    address: propertyAddress as `0x${string}`,
-                    abi: LandABI,
-                    functionName: "yieldRate",
-                    args: [],
-                  }),
-                  client.readContract({
-                    address: propertyAddress as `0x${string}`,
-                    abi: LandABI,
-                    functionName: "lastWithdraw",
-                    args: [userAddress as `0x${string}`],
-                  }),
-                  client.getBlockNumber(),
-                ]);
+              // Get available yield using the getAvailableYield function from contract
+              try {
+                const yieldResult = await client.readContract({
+                  address: propertyAddress as `0x${string}`,
+                  abi: LandABI,
+                  functionName: "getAvailableYield",
+                  args: [userAddress as `0x${string}`],
+                });
 
-              const yieldRate = Number(yieldRateResult);
-              const lastWithdrawBlock = Number(lastWithdrawResult);
-              const currentBlock = Number(currentBlockResult);
-
-              // Calculate blocks passed since last withdrawal
-              const blocksPassed = currentBlock - lastWithdrawBlock;
-
-              // Calculate accumulated yield: yieldRate * blocksPassed * userBalance
-              const accumulatedYield =
-                (yieldRate * blocksPassed * nftBalance) / 1e18; // Convert from wei to USDT
-              availableToClaim += accumulatedYield;
-
-              console.log(`Property ${propertyAddress}:`, {
-                name: property.propertyName,
-                balance: nftBalance,
-                sharePrice: sharePrice.toFixed(2),
-                investmentValue: investmentValue.toFixed(2),
-                yieldRate: yieldRate.toString(),
-                lastWithdrawBlock,
-                currentBlock,
-                blocksPassed,
-                accumulatedYield: accumulatedYield.toFixed(6),
-                apy: property.apy,
-              });
+                // yieldResult returns [yieldAmount, canWithdraw, hasBalance]
+                const [yieldAmount, canWithdraw] = yieldResult as [bigint, boolean, boolean];
+                
+                // Only add yield if it's available and user can withdraw
+                if (canWithdraw && yieldAmount > 0n) {
+                  const yieldInUSDT = Number(yieldAmount) / 1e18;
+                  availableToClaim += yieldInUSDT;
+                  
+                  console.log(`Property ${propertyAddress}:`, {
+                    name: property.propertyName,
+                    balance: nftBalance,
+                    sharePrice: sharePrice.toFixed(2),
+                    investmentValue: investmentValue.toFixed(2),
+                    availableYield: yieldInUSDT.toFixed(6),
+                    canWithdraw,
+                  });
+                } else {
+                  console.log(`Property ${propertyAddress}:`, {
+                    name: property.propertyName,
+                    balance: nftBalance,
+                    sharePrice: sharePrice.toFixed(2),
+                    investmentValue: investmentValue.toFixed(2),
+                    availableYield: "0 (not yet available)",
+                    canWithdraw,
+                  });
+                }
+              } catch (yieldError) {
+                console.warn(`Could not get yield for ${propertyAddress}:`, yieldError);
+                // This is expected if project hasn't started or no yield available yet
+                // Continue without adding to availableToClaim - this is normal
+                console.log(`Property ${propertyAddress}:`, {
+                  name: property.propertyName,
+                  balance: nftBalance,
+                  sharePrice: sharePrice.toFixed(2),
+                  investmentValue: investmentValue.toFixed(2),
+                  availableYield: "0 (error or not started)",
+                });
+              }
             }
           }
         } catch (error) {
@@ -126,11 +132,24 @@ export function useUserPortfolioStats() {
         totalInvestment,
         availableToClaim,
         totalBalance,
-        monthlyEarnings: 7.165, // Fixed mock number
+        monthlyEarnings: 120.50, // Mock monthly earnings
       };
+      
+      } catch (error) {
+        console.error("Error calculating portfolio stats:", error);
+        // Return safe defaults if anything fails
+        return {
+          totalInvestment: 0,
+          availableToClaim: 0,
+          totalBalance: 0,
+          monthlyEarnings: 120.50, // Mock monthly earnings
+        };
+      }
     },
     enabled: !!userAddress && !!allProperties,
-    staleTime: 5000, // Refresh every 5 seconds for dynamic yield
-    refetchInterval: 5000, // Auto-refresh every 5 seconds to show growing yield
+    staleTime: 10000, // Refresh every 10 seconds to reduce RPC calls
+    refetchInterval: 10000, // Auto-refresh every 10 seconds to show growing yield
+    retry: 3, // Retry failed requests up to 3 times
+    retryDelay: (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
   });
 }

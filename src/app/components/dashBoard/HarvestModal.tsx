@@ -8,7 +8,7 @@ import {
 } from "wagmi";
 import { LandABI } from "@/lib/abis";
 import { PROPERTY_ADDRESSES } from "@/lib/contracts";
-import { baseSepolia } from "@/lib/wagmi";
+import { u2uTestnet } from "@/lib/wagmi";
 import { createPublicClient, http } from "viem";
 import { motion } from "framer-motion";
 
@@ -19,7 +19,10 @@ interface HarvestModalProps {
 
 interface PropertyWithNFTs {
   address: string;
+  name: string;
   balance: number;
+  availableYield: number;
+  canWithdraw: boolean;
   isHarvesting: boolean;
   isComplete: boolean;
   hash?: `0x${string}`;
@@ -42,25 +45,45 @@ export function HarvestModal({ onClose, availableToClaim }: HarvestModalProps) {
       if (!userAddress) return;
 
       const client = createPublicClient({
-        chain: baseSepolia,
-        transport: http("https://sepolia.base.org"),
+        chain: u2uTestnet,
+        transport: http("https://rpc-nebulas-testnet.uniultra.xyz"),
       });
 
       const propertiesWithNFTs: PropertyWithNFTs[] = [];
 
       for (const propertyAddress of PROPERTY_ADDRESSES) {
         try {
-          const balance = await client.readContract({
-            address: propertyAddress as `0x${string}`,
-            abi: LandABI,
-            functionName: "balanceOf",
-            args: [userAddress as `0x${string}`],
-          });
+          const [balance, propertyName, yieldResult] = await Promise.all([
+            client.readContract({
+              address: propertyAddress as `0x${string}`,
+              abi: LandABI,
+              functionName: "balanceOf",
+              args: [userAddress as `0x${string}`],
+            }),
+            client.readContract({
+              address: propertyAddress as `0x${string}`,
+              abi: LandABI,
+              functionName: "name",
+              args: [],
+            }),
+            client.readContract({
+              address: propertyAddress as `0x${string}`,
+              abi: LandABI,
+              functionName: "getAvailableYield",
+              args: [userAddress as `0x${string}`],
+            }).catch(() => [BigInt(0), false, false]) // Fallback if yield call fails
+          ]);
 
           if (Number(balance) > 0) {
+            const [yieldAmount, canWithdraw] = yieldResult as [bigint, boolean, boolean];
+            const yieldInUSDT = Number(yieldAmount) / 1e18;
+            
             propertiesWithNFTs.push({
               address: propertyAddress,
+              name: propertyName as string,
               balance: Number(balance),
+              availableYield: yieldInUSDT,
+              canWithdraw: canWithdraw,
               isHarvesting: false,
               isComplete: false,
             });
@@ -103,7 +126,7 @@ export function HarvestModal({ onClose, availableToClaim }: HarvestModalProps) {
       address: propertyAddress as `0x${string}`,
       functionName: "withdrawYield",
       args: [],
-      chainId: baseSepolia.id,
+      chainId: u2uTestnet.id,
     });
   };
 
@@ -155,7 +178,10 @@ export function HarvestModal({ onClose, availableToClaim }: HarvestModalProps) {
           </div>
         ) : properties.length === 0 ? (
           <div className="text-center py-8">
-            <p className="text-gray-600">No properties found with NFTs</p>
+            <p className="text-gray-600">You don't own any NFTs yet</p>
+            <p className="text-sm text-gray-500 mt-2">
+              Visit the Investment page to purchase property NFTs
+            </p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -163,40 +189,58 @@ export function HarvestModal({ onClose, availableToClaim }: HarvestModalProps) {
               <p className="text-sm text-gray-600">
                 Found {properties.length} properties with NFTs
               </p>
-              <button
-                onClick={harvestAll}
-                disabled={properties.every((p) => p.isComplete)}
-                className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Harvest All
-              </button>
             </div>
 
             {properties.map((property, index) => (
-              <div key={property.address} className="border rounded-lg p-3">
+              <div key={property.address} className="border rounded-lg p-3 bg-gray-50">
                 <div className="flex justify-between items-center">
-                  <div>
+                  <div className="flex-1">
                     <p className="text-sm font-medium text-gray-900">
-                      Property #{index + 1}
+                      {property.name}
                     </p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-gray-500 mb-1">
                       {property.address.slice(0, 10)}...
                       {property.address.slice(-8)}
                     </p>
-                    <p className="text-xs text-gray-600">
-                      {property.balance} NFTs
-                    </p>
+                    <div className="flex items-center gap-4 text-xs">
+                      <span className="text-gray-600">
+                        {property.balance} NFT{property.balance !== 1 ? 's' : ''}
+                      </span>
+                      <span className={`font-medium ${property.availableYield > 0 ? 'text-green-600' : 'text-gray-500'}`}>
+                        ${property.availableYield.toFixed(4)} yield
+                      </span>
+                      <span className={`text-xs px-2 py-1 rounded ${property.canWithdraw && property.availableYield > 0 ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
+                        {property.canWithdraw && property.availableYield > 0 ? 'Ready' : 'Accumulating'}
+                      </span>
+                    </div>
                   </div>
                   <button
                     onClick={() => harvestFromProperty(property.address)}
-                    disabled={property.isHarvesting || property.isComplete}
-                    className="px-3 py-1 bg-green-500 text-white text-sm rounded hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={
+                      property.isHarvesting || 
+                      property.isComplete || 
+                      !property.canWithdraw || 
+                      property.availableYield <= 0
+                    }
+                    className={`px-3 py-1 text-sm rounded ml-3 transition-colors ${
+                      property.isComplete
+                        ? 'bg-gray-200 text-gray-600 cursor-not-allowed'
+                        : property.isHarvesting
+                        ? 'bg-blue-500 text-white cursor-wait'
+                        : property.canWithdraw && property.availableYield > 0
+                        ? 'bg-green-500 text-white hover:bg-green-600 cursor-pointer'
+                        : 'bg-gray-300 text-gray-600 cursor-not-allowed'
+                    }`}
                   >
                     {property.isComplete
-                      ? "✅ Done"
+                      ? "✅ Claimed"
                       : property.isHarvesting
-                      ? "Harvesting..."
-                      : "Harvest"}
+                      ? "Claiming..."
+                      : property.canWithdraw && property.availableYield > 0
+                      ? "Claim Now"
+                      : property.availableYield > 0
+                      ? "Not Ready"
+                      : "No Yield"}
                   </button>
                 </div>
               </div>
