@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AnimatePresence, LayoutGroup, motion } from "framer-motion";
 import { useAccount } from "wagmi";
+import { useQueryClient } from "@tanstack/react-query";
 import { PROPERTY_ADDRESSES } from "@/lib/contracts";
 import PropertyNFTs from "./PropertyNFTs";
 import ListingModal from "./ListingModal";
@@ -32,9 +33,28 @@ export default function MyPositionSection() {
   const { toast, showToast, hideToast } = useToast();
   
   // Initialize marketplace hooks
-  const { listNFT, isListing } = useListNFT();
+  const queryClient = useQueryClient();
+  const { listNFT, isListing, isSuccess: isListingSuccess } = useListNFT();
   const { approveNFT, isApproving } = useApproveNFT();
-  const { cancelListing, isCancelling } = useCancelListing();
+  const { cancelListing, isCancelling, isSuccess: isCancelSuccess } = useCancelListing();
+
+    // Invalidate queries when listing is successful
+  useEffect(() => {
+    if (isListingSuccess) {
+      queryClient.invalidateQueries({ queryKey: ["activeListings"] });
+      queryClient.invalidateQueries({ queryKey: ["userNFTListings"] });
+      queryClient.invalidateQueries({ queryKey: ["listingCounter"] });
+    }
+  }, [isListingSuccess, queryClient]);
+
+  // Invalidate queries when cancel listing is successful
+  useEffect(() => {
+    if (isCancelSuccess) {
+      queryClient.invalidateQueries({ queryKey: ["activeListings"] });
+      queryClient.invalidateQueries({ queryKey: ["userNFTListings"] });
+      queryClient.invalidateQueries({ queryKey: ["listingCounter"] });
+    }
+  }, [isCancelSuccess, queryClient]);
 
   // Handle listing NFT
   const handleListForSale = (nftContract: string, tokenId: number, name: string, currentPrice: bigint) => {
@@ -57,16 +77,9 @@ export default function MyPositionSection() {
       console.log("Listing NFT on marketplace...");
       await listNFT(listingNFT.nftContract, listingNFT.tokenId, priceUSDT);
       
-      // Show success message
-      showToast("NFT listed successfully! 🎉", "success");
+      // Success will be handled by the useEffect hook when isListingSuccess becomes true
+      // This avoids the need for window.location.reload()
       
-      // Close modal and refresh data
-      setIsListingModalOpen(false);
-      setListingNFT(null);
-      
-      // Force refresh of the page to update listing status
-      // In production, you'd use React Query invalidation
-      setTimeout(() => window.location.reload(), 2000);
     } catch (error) {
       console.error("Failed to list NFT:", error);
       showToast("Failed to list NFT. The process requires two transactions: 1) Approve NFT for marketplace, 2) List NFT. Please try again.", "error");
@@ -78,8 +91,11 @@ export default function MyPositionSection() {
       await cancelListing(listingId);
       showToast(`Successfully cancelled listing for ${name}! ✅`, "success");
       
-      // Refresh to update the UI
-      setTimeout(() => window.location.reload(), 2000);
+      // Invalidate queries to refresh the UI
+      queryClient.invalidateQueries({ queryKey: ["activeListings"] });
+      queryClient.invalidateQueries({ queryKey: ["userNFTListings"] });
+      queryClient.invalidateQueries({ queryKey: ["listingCounter"] });
+      
     } catch (error) {
       console.error("Failed to cancel listing:", error);
       showToast("Failed to cancel listing. Please try again.", "error");

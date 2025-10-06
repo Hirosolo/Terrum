@@ -9,7 +9,7 @@ export function useListNFT() {
   const [isListing, setIsListing] = useState(false);
   
   const { writeContract, data: hash, error } = useWriteContract();
-  const { isLoading: isConfirming } = useWaitForTransactionReceipt({
+  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
     hash,
   });
 
@@ -48,6 +48,7 @@ export function useListNFT() {
   return {
     listNFT,
     isListing: isListing || isConfirming,
+    isSuccess: isSuccess && !isConfirming,
     error,
     hash,
   };
@@ -57,7 +58,7 @@ export function useCancelListing() {
   const [isCancelling, setIsCancelling] = useState(false);
   
   const { writeContract, data: hash, error } = useWriteContract();
-  const { isLoading: isConfirming } = useWaitForTransactionReceipt({
+  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
     hash,
   });
 
@@ -85,6 +86,7 @@ export function useCancelListing() {
   return {
     cancelListing,
     isCancelling: isCancelling || isConfirming,
+    isSuccess,
     error,
     hash,
   };

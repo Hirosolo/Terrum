@@ -47,7 +47,7 @@ export const PROPERTY_METADATA: { [key: string]: {
   "0xf476D12Dd460ee9D48ED7d95234D8F2a5C894e99": {
     name: "Saigon Pearl Residence",
     location: "Binh Thanh District, Ho Chi Minh City",
-    type: "Luxury Apartment Complex",
+    type: "Residential",
     image: "/image-Property1.jpg",
     galleryImages: ["/image-Property1.jpg", "/image-Property2.jpg", "/image-Property3.jpg"],
     description: "Premium waterfront living in the heart of Saigon with stunning river views, world-class amenities, and direct access to the city's financial district.",
@@ -56,7 +56,7 @@ export const PROPERTY_METADATA: { [key: string]: {
   "0xFC7cf639b8168Ce8715F788887B731A244c5885E": {
     name: "Hanoi Horizon Towers",
     location: "Cau Giay District, Hanoi",
-    type: "Modern Residential Tower",
+    type: "Apartment",
     image: "/image-Property4.jpg",
     galleryImages: ["/image-Property4.jpg", "/image-Property5.jpg", "/image-Property6.jpg"],
     description: "Contemporary high-rise living in Hanoi's dynamic business district, featuring smart home technology and panoramic city views.",
@@ -65,7 +65,7 @@ export const PROPERTY_METADATA: { [key: string]: {
   "0x4A0e3FCADBA7c97F9AC10aB7Bc9B32a3eF754b76": {
     name: "Da Nang Marina Bay",
     location: "Ngu Hanh Son District, Da Nang",
-    type: "Beachfront Resort Complex",
+    type: "Co-living",
     image: "/image-Property7.jpg",
     galleryImages: ["/image-Property7.jpg", "/image-Property8.jpg", "/image-Property9.jpg"],
     description: "Luxury beachfront resort complex with private marina, offering unparalleled coastal living and investment opportunities in Central Vietnam.",
@@ -74,7 +74,7 @@ export const PROPERTY_METADATA: { [key: string]: {
   "0x7Fa2E1f819047033971C9E282148c8744AA9FE3A": {
     name: "Nha Trang Skyline",
     location: "Loc Tho Ward, Nha Trang",
-    type: "Premium Beachside Resort",
+    type: "Hospitality",
     image: "/image-Property10.jpg",
     galleryImages: ["/image-Property10.jpg", "/image-Property11.jpg", "/image-Property12.jpg"],
     description: "Iconic beachfront development combining residential luxury with resort amenities, perfectly positioned along Nha Trang's famous coastline.",
@@ -83,7 +83,7 @@ export const PROPERTY_METADATA: { [key: string]: {
   "0xb5C684098b5295f131fb50A377cf4FC3831dd8c9": {
     name: "Mekong Riverside Villas",
     location: "Can Tho City, Mekong Delta",
-    type: "Eco-Luxury Villa Resort",
+    type: "Residential",
     image: "/image-Property13.jpg",
     galleryImages: ["/image-Property13.jpg", "/image-Property14.jpg", "/image-Property15.jpg"],
     description: "Sustainable luxury villas nestled along the Mekong River, offering eco-friendly living with authentic Vietnamese Delta experiences.",
@@ -92,7 +92,7 @@ export const PROPERTY_METADATA: { [key: string]: {
   "0xf9F560e8EBB7B5Dc3C4AfACF860a98cA44DFe01c": {
     name: "Hue Imperial Garden",
     location: "Imperial City, Hue",
-    type: "Heritage Boutique Hotel",
+    type: "Apartment",
     image: "/image-Property16.jpg",
     galleryImages: ["/image-Property16.jpg", "/image-Property17.jpg", "/image-Property18.jpg"],
     description: "Historically inspired luxury accommodation within walking distance of Hue's Imperial City, blending cultural heritage with modern comfort.",
@@ -101,7 +101,7 @@ export const PROPERTY_METADATA: { [key: string]: {
   "0x19052aC0EF38517C1C4Fcf02CCf37807dcEE864F": {
     name: "Phu Quoc Oceanfront Estate",
     location: "Duong To Commune, Phu Quoc Island",
-    type: "Island Paradise Resort",
+    type: "Co-living",
     image: "/image-Property19.jpg",
     galleryImages: ["/image-Property19.jpg", "/image-Property20.jpg", "/image-Property21.jpg"],
     description: "Exclusive island resort development on Vietnam's largest island, featuring pristine beaches, tropical landscapes, and world-class facilities.",
@@ -110,7 +110,7 @@ export const PROPERTY_METADATA: { [key: string]: {
   "0xB2a5Aa1629C176F97Dc5fA117D9075Ac4a3fFC63": {
     name: "Sapa Highland Retreat",
     location: "Sapa Town, Lao Cai Province",
-    type: "Mountain Eco Resort",
+    type: "Hospitality",
     image: "/image-Property22.jpg",
     galleryImages: ["/image-Property22.jpg", "/image-Property23.jpg", "/image-Property24.jpg"],
     description: "Mountain retreat resort offering breathtaking terraced landscape views, authentic ethnic culture experiences, and cool highland climate.",

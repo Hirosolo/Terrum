@@ -100,7 +100,25 @@ export function useActiveListings() {
         }
       }
       
-      return listings;
+      // Filter to only show the latest listing for each unique NFT (contract + tokenId)
+      const uniqueListings: MarketplaceListing[] = [];
+      const nftTracker = new Map<string, MarketplaceListing>();
+      
+      // Process listings to find the latest one for each unique NFT
+      listings.forEach((listing) => {
+        const nftKey = `${listing.nftContract.toLowerCase()}:${listing.tokenId}`;
+        const existingListing = nftTracker.get(nftKey);
+        
+        // Keep the listing with the highest listingId (most recent)
+        if (!existingListing || listing.listingId > existingListing.listingId) {
+          nftTracker.set(nftKey, listing);
+        }
+      });
+      
+      // Convert map values to array
+      uniqueListings.push(...nftTracker.values());
+      
+      return uniqueListings;
     },
     enabled: listingCounter > 0,
     refetchInterval: 10000, // Refetch every 10 seconds to catch new listings quickly

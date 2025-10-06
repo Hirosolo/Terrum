@@ -26,20 +26,48 @@ export async function GET(
       abi: MarketplaceABI,
       functionName: 'getListing',
       args: [BigInt(listingId)],
-    }) as [string, string, bigint, string, bigint, boolean]; // [seller, nftContract, tokenId, paymentToken, price, isActive]
+    });
 
-    // Destructure the tuple result
-    const [seller, nftContract, tokenId, paymentToken, price, isActive] = listing;
+    console.log(`Raw listing data for ID ${listingId}:`, listing);
+
+    // Check if listing exists and is valid (should be an object with struct fields)
+    if (!listing || typeof listing !== 'object') {
+      console.log(`Listing ${listingId} not found or invalid structure`);
+      // Return inactive listing if not found
+      const emptyListing = {
+        seller: "0x0000000000000000000000000000000000000000",
+        nftContract: "0x0000000000000000000000000000000000000000", 
+        tokenId: "0",
+        paymentToken: "0x0000000000000000000000000000000000000000",
+        price: "0",
+        active: false,
+        listedAt: 0,
+        listingId: Number(listingId),
+      };
+      
+      return NextResponse.json(emptyListing);
+    }
+
+    // Access the struct fields directly (Viem returns structs as objects)
+    const listingData = listing as {
+      seller: string;
+      nftContract: string;
+      tokenId: bigint;
+      paymentToken: string;
+      price: bigint;
+      active: boolean;
+      listedAt: bigint;
+    };
     
     // Convert the result to the expected format
     const formattedListing = {
-      seller,
-      nftContract,
-      tokenId: tokenId.toString(),
-      paymentToken,
-      price: price.toString(), // Convert BigInt to string
-      active: isActive,
-      listedAt: Date.now(), // Use current timestamp as placeholder
+      seller: listingData.seller,
+      nftContract: listingData.nftContract,
+      tokenId: listingData.tokenId.toString(),
+      paymentToken: listingData.paymentToken,
+      price: listingData.price.toString(), // Convert BigInt to string
+      active: listingData.active,
+      listedAt: Number(listingData.listedAt), // Convert BigInt to number
       listingId: Number(listingId),
     };
     
