@@ -50,3 +50,9 @@ foundry/out/
 foundry/broadcast
 foundry/broadcast/*/31337/
 foundry/broadcast/**/dry-run/
+
+# vscode
+.vscode
+
+# dependencies files
+pnpm-lock.yaml
