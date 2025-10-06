@@ -44,7 +44,7 @@ export const baseSepolia = {
 export const config = getDefaultConfig({
   appName: "Landzen",
   projectId: "5c992b50e8871ed27bdb8e9f96975888",
-  chains: [mainnet, sepolia, polygon, arbitrum, u2uTestnet],
+  chains: [u2uTestnet, mainnet, sepolia, polygon, arbitrum], // Put U2U testnet first as default
   ssr: true,
 });
 

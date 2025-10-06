@@ -1,6 +1,7 @@
 'use client'
 
 import { useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
+import { useSwitchChain } from 'wagmi'
 import { useQuery } from '@tanstack/react-query'
 import { LandTokenizerABI, LandABI, MockUSDTABI } from './abis'
 import { CONTRACT_ADDRESSES, PROPERTY_TYPES, PROPERTY_ADDRESSES } from './contracts'
@@ -394,11 +395,11 @@ export function useInvestInProperty() {
   
   const investInProperty = async (propertyAddress: string, shareAmount: number, userAddress: string) => {
     // Land contract's mint() function mints 1 NFT per call
-    // For multiple NFTs, we need to call mint() multiple times
-    // For now, let's mint just 1 NFT - enhance later for batch minting if needed
+    // For multiple NFTs, user needs to call mint() multiple times
+    // For now, mint just 1 NFT per transaction
     
     if (shareAmount > 1) {
-      console.warn(`Requested ${shareAmount} NFTs, but currently only minting 1 NFT per transaction.`)
+      console.warn(`Requested ${shareAmount} NFTs, but minting only 1 NFT per transaction. User needs to click INVEST ${shareAmount} times to get ${shareAmount} NFTs.`)
     }
     
     writeContract({
@@ -439,6 +440,7 @@ export function useMintUSDT() {
       abi: MockUSDTABI,
       functionName: 'mint',
       args: [to, amount],
+      chainId: u2uTestnet.id,
     })
   }
   
@@ -477,6 +479,7 @@ export function useApproveUSDT() {
       abi: MockUSDTABI,
       functionName: 'approve', 
       args: [spender, amount],
+      chainId: u2uTestnet.id,
     })
   }
   
@@ -639,4 +642,34 @@ export function useWithdrawYield(propertyAddress: string) {
     isConfirmed,
     error,
   }
+}
+
+// Hook to switch to U2U testnet
+export function useSwitchToU2U() {
+  const { switchChain, isPending, error } = useSwitchChain()
+  
+  const switchToU2U = () => {
+    switchChain({ chainId: u2uTestnet.id })
+  }
+  
+  return {
+    switchToU2U,
+    isPending,
+    error,
+  }
+}
+
+// Hook to get user's NFT count for a specific property (with real-time updates)
+export function useUserNFTCount(propertyAddress: string, userAddress?: string) {
+  return useReadContract({
+    abi: LandABI,
+    address: propertyAddress as `0x${string}`,
+    functionName: 'balanceOf',
+    args: userAddress ? [userAddress as `0x${string}`] : undefined,
+    chainId: u2uTestnet.id,
+    query: {
+      enabled: !!propertyAddress && !!userAddress,
+      refetchInterval: 5000, // Refetch every 5 seconds for real-time updates
+    },
+  })
 }

@@ -51,3 +51,32 @@ export function formatUSDTSafe(amount: bigint | string | number): string {
     maximumFractionDigits: 0
   }).format(dollars);
 }
+
+// Calculate yield earnings based on Land contract yield system
+export function calculateYieldEarnings(
+  yieldRatePerBlock: bigint | string | number,
+  nftCount: number,
+  timeInBlocks: number
+): bigint {
+  const yieldRate = toBigInt(yieldRatePerBlock);
+  const totalYield = yieldRate * BigInt(timeInBlocks) * BigInt(nftCount);
+  return totalYield;
+}
+
+// Calculate monthly earnings (30 days = 216,000 blocks at 12s per block)
+export function calculateMonthlyEarnings(
+  yieldRatePerBlock: bigint | string | number,
+  nftCount: number
+): bigint {
+  const MONTH_IN_BLOCKS = 216000; // 30 days * 24 hours * 60 minutes * 60 seconds / 12 seconds per block
+  return calculateYieldEarnings(yieldRatePerBlock, nftCount, MONTH_IN_BLOCKS);
+}
+
+// Calculate annual earnings (365 days = 2,628,000 blocks at 12s per block)
+export function calculateAnnualEarnings(
+  yieldRatePerBlock: bigint | string | number,
+  nftCount: number
+): bigint {
+  const YEAR_IN_BLOCKS = 2628000; // 365 days * 24 hours * 60 minutes * 60 seconds / 12 seconds per block
+  return calculateYieldEarnings(yieldRatePerBlock, nftCount, YEAR_IN_BLOCKS);
+}

@@ -1,15 +1,21 @@
 "use client";
 import Image from "next/image";
 import { useState, useEffect } from "react";
-import { useAccount } from "wagmi";
+import { useAccount, useChainId, useSwitchChain } from "wagmi";
 import {
   PropertyData,
   usePurchaseShares,
   useUSDTAllowance,
   useApproveUSDT,
   useGetTokenStats,
+  useUserNFTCount,
 } from "@/lib/hooks";
-import { formatUSDTSafe, toBigInt } from "@/lib/utils";
+import { 
+  formatUSDTSafe, 
+  toBigInt, 
+  calculateMonthlyEarnings,
+  calculateAnnualEarnings 
+} from "@/lib/utils";
 
 type PropertyInfoContentProps = {
   property: PropertyData;
@@ -20,6 +26,8 @@ export default function PropertyInfoContent({
 }: PropertyInfoContentProps) {
   const [shareAmount, setShareAmount] = useState(1);
   const { address: userAddress, isConnected } = useAccount();
+  const chainId = useChainId();
+  const { switchChain, isPending: isSwitching } = useSwitchChain();
   const { investInProperty, isPending, isConfirming, isSuccess, error } =
     usePurchaseShares();
 
@@ -28,8 +36,15 @@ export default function PropertyInfoContent({
     property.contractAddress
   );
 
+  // Get user's NFT count for this property
+  const { data: userNFTCount, refetch: refetchNFTCount } = useUserNFTCount(
+    property.contractAddress,
+    userAddress
+  );
+
   // Debug token stats
   console.log("Token Stats:", tokenStats);
+  console.log("User NFT Count:", userNFTCount);
 
   // USDT approval hooks
   const { data: allowance, refetch: refetchAllowance } = useUSDTAllowance(
@@ -69,10 +84,17 @@ export default function PropertyInfoContent({
   const nftPrice = sharePrice;
   const rentalYield = property.apy;
   const mockAnnualReturn = 10.36;
-  const mockProjectLength = "90 days";
 
   // Calculate total cost
   const totalCost = nftPrice * BigInt(shareAmount);
+
+  // Calculate earnings based on the amount user is about to mint
+  const currentNFTCount = userNFTCount ? Number(userNFTCount) : 0;
+  const yieldRatePerBlock = toBigInt(property.yieldPerBlock);
+  
+  // Calculate projected earnings based on shareAmount (what they're about to buy)
+  const projectedMonthlyEarnings = calculateMonthlyEarnings(yieldRatePerBlock, shareAmount);
+  const projectedAnnualEarnings = calculateAnnualEarnings(yieldRatePerBlock, shareAmount);
 
   // Check if approval is needed
   const needsApproval =
@@ -320,16 +342,16 @@ export default function PropertyInfoContent({
             <div className="grid grid-cols-2 gap-y-2 text-beige-100 text-base">
               <p className="font-semibold">Total Paid</p>
               <p className="text-right">{formatUSDTSafe(totalCost)}</p>
+              <p className="font-semibold">NFTs to Mint</p>
+              <p className="text-right">{shareAmount}</p>
               <p className="font-semibold">Monthly Earned</p>
-              <p className="text-right">TBA</p>
+              <p className="text-right">
+                {formatUSDTSafe(projectedMonthlyEarnings)}
+              </p>
               <p className="font-semibold">Annually Earned</p>
-              <p className="text-right">TBA</p>
-              <p className="font-semibold">Start Date</p>
-              <p className="text-right">TBA</p>
-              <p className="font-semibold">End Date</p>
-              <p className="text-right">TBA</p>
-              <p className="font-semibold">Total Profit</p>
-              <p className="text-right">TBA</p>
+              <p className="text-right">
+                {formatUSDTSafe(projectedAnnualEarnings)}
+              </p>
             </div>
           </div>
 
@@ -359,13 +381,9 @@ export default function PropertyInfoContent({
                 </p>
                 <p className="text-xs text-moss-700">Rental Yield</p>
               </div>
-              <div className="bg-gray-50 rounded-xl p-3">
-                <p className="font-bold text-moss-700">{mockAnnualReturn}%</p>
-                <p className="text-xs text-moss-700">Annual Return</p>
-              </div>
-              <div className="bg-gray-50 rounded-xl p-3">
-                <p className="font-bold text-moss-700">{mockProjectLength}</p>
-                <p className="text-xs text-moss-700">Project Length</p>
+              <div className="bg-gray-50 rounded-xl p-3 col-span-2">
+                <p className="font-bold text-moss-700 text-xl">{mockAnnualReturn}%</p>
+                <p className="text-sm text-moss-700">Annual Return</p>
               </div>
             </div>
           </div>
