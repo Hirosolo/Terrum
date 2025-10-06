@@ -11,22 +11,24 @@ interface ILand {
 }
 
 contract FundPropertiesForYield is Script {
-    address constant USDT_ADDRESS = 0xc6ed2ebaf52Ba37f128230f6DF5427097B15f009;
+    address constant USDT_ADDRESS = 0x5Df5E5FD5396e1387A982a7A7450D0c7CEaB40B8;
     
-    // All deployed property addresses
+    // All deployed property addresses on U2U testnet
     address[] public propertyAddresses = [
-        0xb32559bC7924e175FB3285D46f3f7Fd7d441123e,
-        0x292C1C0EA88A461625010c49738DA0bA10237EE6,
-        0xB897fB791A67884699629A9e65AFb08812A1168e,
-        0x5942A271986e3344C31C7ae8B4deCD90dA70E00d,
-        0x72f82Bde74fdc61Fe45B0D0a368462886D73181d,
-        0xC24C06F2554DF4D086B8CaAe4ef57176E44bc1aC,
-        0xEdFBC8a81AB254eddB95843475f780C7fD5a8e62,
-        0xE186c2d6DEB392f25267522C4c8B7D60455f40aE
+        0xC6141Ff111AeB43731EC2d528E779175Ecdd818b, // Property 1 - Saigon Pearl Residence
+        0x811CFbb8d921DfBF0e24c922EE1Bca3cc4b91c96, // Property 2 - Hanoi Horizon Towers
+        0x20C6924E9A2831FD58aa10cFb9b782A31865b470, // Property 3 - Da Nang Marina Bay
+        0xEA2D22e92b8a2B7ed4cfA7C92a92F6b2D519c740, // Property 4 - Nha Trang Skyline
+        0xBeE606a6c95A4B93EcccCA6aA9009F4cB5D07c45, // Property 5 - Mekong Riverside Villas
+        0xD09D0800747F245350e5DE632b688f3a6667aAD9, // Property 6 - Hue Imperial Garden
+        0xa3085bBc40168Ca4295e567a8a1c16470CD89F8D, // Property 7 - Phu Quoc Oceanfront Estate
+        0xa3628A37656aaEedF8BaA6B8A129731Fd62E707B  // Property 8 - Sapa Highland Retreat
     ];
     
     function run() external {
-        vm.startBroadcast();
+        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
+        
+        vm.startBroadcast(deployerPrivateKey);
         
         mockStableToken usdt = mockStableToken(USDT_ADDRESS);
         
@@ -35,7 +37,7 @@ contract FundPropertiesForYield is Script {
         console.log("Properties to fund:", propertyAddresses.length);
         
         // Fund each property with mock USDT for yield testing
-        uint256 fundingAmount = 100000e6; // 100k USDT per property
+        uint256 fundingAmount = 100000e18; // 100k USDT per property (18 decimals)
         
         for (uint256 i = 0; i < propertyAddresses.length; i++) {
             console.log("\n--- Property", i + 1, "---");
@@ -46,8 +48,8 @@ contract FundPropertiesForYield is Script {
             
             // Verify new balance
             uint256 newBalance = usdt.balanceOf(propertyAddresses[i]);
-            console.log("Funded with (USDT):", fundingAmount / 1e6);
-            console.log("New property balance:", newBalance / 1e6, "USDT");
+            console.log("Funded with (USDT):", fundingAmount / 1e18);
+            console.log("New property balance:", newBalance / 1e18, "USDT");
             console.log("SUCCESS: Property funded!");
         }
         
@@ -58,7 +60,7 @@ contract FundPropertiesForYield is Script {
         // Check balances after funding
         for (uint256 i = 0; i < propertyAddresses.length; i++) {
             uint256 balance = IERC20(USDT_ADDRESS).balanceOf(propertyAddresses[i]);
-            console.log("Property balance (USDT):", balance / 1e6);
+            console.log("Property balance (USDT):", balance / 1e18);
         }
         
         console.log("\n=== SUCCESS ===");
@@ -71,11 +73,11 @@ contract FundPropertiesForYield is Script {
         
         mockStableToken usdt = mockStableToken(USDT_ADDRESS);
         
-        console.log("Funding property with (USDT):", amount / 1e6);
+        console.log("Funding property with (USDT):", amount / 1e18);
         usdt.mint(propertyAddress, amount);
         
         uint256 newBalance = usdt.balanceOf(propertyAddress);
-        console.log("New property balance:", newBalance / 1e6, "USDT");
+        console.log("New property balance:", newBalance / 1e18, "USDT");
         
         vm.stopBroadcast();
     }
@@ -85,7 +87,7 @@ contract FundPropertiesForYield is Script {
         vm.startBroadcast();
         
         mockStableToken usdt = mockStableToken(USDT_ADDRESS);
-        console.log("Emergency funding property (USDT):", amount / 1e6);
+        console.log("Emergency funding property (USDT):", amount / 1e18);
         usdt.mint(propertyAddress, amount);
         
         vm.stopBroadcast();

@@ -176,7 +176,7 @@ contract LandTokenizer is Ownable, ReentrancyGuard, Pausable{
     function _validatePropertyParams(PropertyParams memory params) internal view {
         if (params.totalValue == 0) revert InvalidPropertyValue();
         if (params.totalSupply == 0) revert InvalidSupply();
-        if (params.startDate < block.timestamp) revert InvalidStartDate();
+        if (params.startDate < block.number) revert InvalidStartDate();
         
         if (bytes(params.propertyName).length == 0) revert InvalidPropertyName();
         if (bytes(params.propertySymbol).length == 0) revert InvalidPropertySymbol();

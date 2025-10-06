@@ -14,9 +14,10 @@ contract DeployFactoryWithProperties is Script {
         vm.startBroadcast(deployerPrivateKey);
         
         address deployer = vm.addr(deployerPrivateKey);
-        console.log("=== Deploying to Base Sepolia ===");
+        console.log("=== Deploying to U2U Testnet ===");
         console.log("Deployer:", deployer);
-        console.log("Balance:", deployer.balance / 1e18, "ETH");
+        console.log("Balance:", deployer.balance / 1e18, "U2U");
+        console.log("Current block:", block.number);
         
         // Use existing Mock USDT
         address usdtAddress = 0x5Df5E5FD5396e1387A982a7A7450D0c7CEaB40B8;
@@ -59,8 +60,9 @@ contract DeployFactoryWithProperties is Script {
             uint256 apy = 5 + (i % 3); // 5%, 6%, 7%
             uint256 yieldRate = calculateYieldRate(values[i], supplies[i], apy);
             
-            // First 4 properties start in 2 hours, last 4 start in 8 hours
-            uint256 startTime = i < 4 ? block.timestamp + 2 hours : block.timestamp + 8 hours;
+            // Each NFT starts 100 blocks after the previous one, with minimum 100 blocks delay
+            // This gives people time to mint before yield starts
+            uint256 startBlock = block.number + 100 + (i * 100);
             
             address propertyAddress = tokenizer.tokenizeProperty(
                 usdtAddress,
@@ -69,16 +71,15 @@ contract DeployFactoryWithProperties is Script {
                 values[i],
                 supplies[i],
                 yieldRate,
-                startTime,
+                startBlock,
                 landTypes[i]
             );
             
             console.log("Property", i + 1, ":", propertyAddress);
-            if (i < 4) {
-                console.log("  Start time: 2 hours from deployment");
-            } else {
-                console.log("  Start time: 8 hours from deployment");
-            }
+            console.log("  APY:", apy, "%");
+            console.log("  Yield rate per block:", yieldRate);
+            console.log("  Start block:", startBlock);
+            console.log("  Delay: ~", ((100 + i * 100) * 12 / 60), "minutes from deployment");
         }
         
         // Mint test tokens
@@ -89,15 +90,25 @@ contract DeployFactoryWithProperties is Script {
         console.log("Mock USDT Address:", usdtAddress);
         console.log("Total Properties:", tokenizer.landCount());
         console.log("Test tokens minted: 5,000,000 Mock USDT");
+        console.log("\n*** IMPORTANT: Update frontend contracts.ts with new addresses! ***");
+        console.log("USDT:", usdtAddress);
+        console.log("LAND_TOKENIZER:", address(tokenizer));
         
         vm.stopBroadcast();
     }
     
     function calculateYieldRate(uint256 totalValue, uint256 totalSupply, uint256 apyPercent) 
         internal pure returns (uint256) {
+        // 12-second blocks: 365 * 24 * 60 * 60 / 12 = 2,628,000 blocks per year
         uint256 BLOCKS_PER_YEAR = 2628000;
         uint256 tokenPrice = totalValue / totalSupply;
         uint256 annualYieldPerToken = (tokenPrice * apyPercent) / 100;
-        return annualYieldPerToken / BLOCKS_PER_YEAR;
+        uint256 yieldPerBlock = annualYieldPerToken / BLOCKS_PER_YEAR;
+        
+        console.log("    Token price:", tokenPrice / 1e18, "USDT");
+        console.log("    Annual yield per token:", annualYieldPerToken / 1e18, "USDT");
+        console.log("    Yield per block:", yieldPerBlock);
+        
+        return yieldPerBlock;
     }
 }
