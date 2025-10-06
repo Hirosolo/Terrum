@@ -16,7 +16,8 @@ export const PROPERTY_ADDRESSES = [
   "0xf9F560e8EBB7B5Dc3C4AfACF860a98cA44DFe01c", // Property 6 - Hue Imperial Garden (7% APY - starts in ~100min)
   "0x19052aC0EF38517C1C4Fcf02CCf37807dcEE864F", // Property 7 - Phu Quoc Oceanfront Estate (5% APY - starts in ~117min)
   "0xB2a5Aa1629C176F97Dc5fA117D9075Ac4a3fFC63", // Property 8 - Sapa Highland Retreat (6% APY - starts in ~134min)
-  "0xaC0eF002C9bbF33ee88C0D042733F9F4abd3dB28"  // Property 9 - Saigon Gateway (6% APY - active for minting now!)
+  "0xaC0eF002C9bbF33ee88C0D042733F9F4abd3dB28", // Property 9 - Saigon Gateway (6% APY - past mint time)
+  "0x710e0494762c52ee06fA10400227Ce7a9CFE0429"  // Property 10 - The East Gate (5% APY - ACTIVE FOR MINTING - 9999 blocks from deployment!)
 ] as const;
 
 // Token metadata for Mock Stable Token
@@ -120,11 +121,20 @@ export const PROPERTY_METADATA: { [key: string]: {
   "0xaC0eF002C9bbF33ee88C0D042733F9F4abd3dB28": {
     name: "Saigon Gateway",
     location: "District 1, Ho Chi Minh City",
-    type: "Residential",
+    type: "Apartment",
     image: "/image-Property1.jpg",
     galleryImages: ["/image-Property1.jpg", "/image-Property2.jpg", "/image-Property3.jpg"],
     description: "Premium mixed-use development in the heart of Saigon's central business district, offering luxury apartments with commercial spaces and excellent connectivity.",
     features: ["Central Location", "Mixed-Use", "Business District", "Metro Access", "Shopping Complex", "Premium Amenities"]
+  },
+  "0x710e0494762c52ee06fA10400227Ce7a9CFE0429": {
+    name: "The East Gate",
+    location: "Thu Duc City, Ho Chi Minh City",
+    type: "Residential",
+    image: "/image-Property4.jpg",
+    galleryImages: ["/image-Property4.jpg", "/image-Property5.jpg", "/image-Property6.jpg"],
+    description: "Luxury residential complex in Thu Duc's emerging tech hub district, featuring modern family homes with smart city infrastructure and excellent connectivity to downtown Saigon.",
+    features: ["Smart City Location", "Tech Hub District", "Modern Family Homes", "Green Spaces", "Educational Hub", "Future Metro Line"]
   }
 };
 

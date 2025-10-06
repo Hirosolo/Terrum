@@ -23,7 +23,8 @@ contract FundPropertiesForYield is Script {
         0xf9F560e8EBB7B5Dc3C4AfACF860a98cA44DFe01c, // Property 6 - Hue Imperial Garden
         0x19052aC0EF38517C1C4Fcf02CCf37807dcEE864F, // Property 7 - Phu Quoc Oceanfront Estate
         0xB2a5Aa1629C176F97Dc5fA117D9075Ac4a3fFC63, // Property 8 - Sapa Highland Retreat
-        0xaC0eF002C9bbF33ee88C0D042733F9F4abd3dB28  // Property 9 - Saigon Gateway (NEW)
+        0xaC0eF002C9bbF33ee88C0D042733F9F4abd3dB28, // Property 9 - Saigon Gateway
+        0x710e0494762c52ee06fA10400227Ce7a9CFE0429  // Property 10 - The East Gate (NEW)
     ];
     
     function run() external {
@@ -65,7 +66,7 @@ contract FundPropertiesForYield is Script {
         }
         
         console.log("\n=== SUCCESS ===");
-        console.log("All 9 properties have been funded with USDT for yield testing!");
+        console.log("All 10 properties have been funded with USDT for yield testing!");
     }
     
     // Helper function to fund a single property
