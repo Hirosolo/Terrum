@@ -8,22 +8,32 @@ import { PROPERTY_ADDRESSES } from "@/lib/contracts";
 export function useUserPortfolioStats() {
   const { address: userAddress } = useAccount();
   const { data: allProperties } = useGetAllProperties();
+  
+  console.log("useUserPortfolioStats called", { 
+    userAddress, 
+    allPropertiesLength: allProperties?.length 
+  });
 
   return useQuery({
     queryKey: ["userPortfolioStats", userAddress, allProperties],
     queryFn: async () => {
+      console.log("Portfolio stats query starting...", {
+        userAddress,
+        propertiesCount: allProperties?.length
+      });
       try {
         if (!userAddress || !allProperties) {
           return {
             totalInvestment: 0,
             availableToClaim: 0,
             totalBalance: 0,
-            monthlyEarnings: 2.11, // Mock monthly earnings
+            monthlyEarnings: 0, // No earnings without user or properties
           };
         }
 
         let totalInvestment = 0;
         let availableToClaim = 0;
+        let monthlyEarnings = 0;
 
         // Import viem client to read balances directly
         const { createPublicClient, http } = await import("viem");
@@ -51,7 +61,7 @@ export function useUserPortfolioStats() {
           if (nftBalance > 0) {
             // Find property data from allProperties
             const property = allProperties.find(
-              (p) =>
+              (p: any) =>
                 p.contractAddress.toLowerCase() ===
                 propertyAddress.toLowerCase()
             );
@@ -61,6 +71,34 @@ export function useUserPortfolioStats() {
               const sharePrice = Number(property.sharePrice) / 1e18; // Convert from wei to USDT
               const investmentValue = sharePrice * nftBalance;
               totalInvestment += investmentValue;
+
+              // Get property yield economics to calculate monthly earnings
+              try {
+                const yieldEconomics = await client.readContract({
+                  address: propertyAddress as `0x${string}`,
+                  abi: LandABI,
+                  functionName: "getYieldEconomics",
+                  args: [],
+                });
+
+                // yieldEconomics returns [yieldRatePerBlock, yieldRatePerMonth, totalSupplyBasis, actualMinted, monthlyYieldRequired, currentReserves]
+                const [yieldRatePerBlock] = yieldEconomics as [bigint, bigint, bigint, bigint, bigint, bigint];
+                
+                // Calculate monthly earnings: yieldRatePerBlock × blocks per month × number of NFTs owned
+                const MONTH_IN_BLOCKS = 216000; // 30 days at 12 seconds per block
+                const monthlyYieldPerNFT = Number(yieldRatePerBlock) * MONTH_IN_BLOCKS / 1e18; // Convert to USDT
+                const userMonthlyFromProperty = monthlyYieldPerNFT * nftBalance;
+                monthlyEarnings += userMonthlyFromProperty;
+                
+                console.log(`Monthly yield for ${property.propertyName}:`, {
+                  yieldRatePerBlock: yieldRatePerBlock.toString(),
+                  monthlyYieldPerNFT: monthlyYieldPerNFT.toFixed(6),
+                  nftBalance,
+                  userMonthlyFromProperty: userMonthlyFromProperty.toFixed(6),
+                });
+              } catch (yieldEconomicsError) {
+                console.warn(`Could not get yield economics for ${propertyAddress}:`, yieldEconomicsError);
+              }
 
               // Get available yield using the getAvailableYield function from contract
               try {
@@ -125,14 +163,14 @@ export function useUserPortfolioStats() {
         totalInvestment: totalInvestment.toFixed(2),
         availableToClaim: availableToClaim.toFixed(6),
         totalBalance: totalBalance.toFixed(2),
-        monthlyEarnings: 2.11,
+        monthlyEarnings: monthlyEarnings.toFixed(6),
       });
 
       return {
         totalInvestment,
         availableToClaim,
         totalBalance,
-        monthlyEarnings: 2.11, // Mock monthly earnings
+        monthlyEarnings, // Real calculated monthly earnings
       };
       
       } catch (error) {
@@ -142,7 +180,7 @@ export function useUserPortfolioStats() {
           totalInvestment: 0,
           availableToClaim: 0,
           totalBalance: 0,
-          monthlyEarnings: 2.11, // Mock monthly earnings
+          monthlyEarnings: 0, // No earnings if no data
         };
       }
     },
