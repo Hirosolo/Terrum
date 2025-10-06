@@ -42,13 +42,44 @@ export default function Faucet() {
       const chainId = await window.ethereum.request({ method: "eth_chainId" });
       console.log("Current chain ID:", chainId);
 
-      // Base Sepolia chain ID is 0x14a34 (84532 in decimal)
-      const baseSepoliaChainId = "0x14a34";
-      if (chainId !== baseSepoliaChainId) {
-        alert(
-          `Please switch to Base Sepolia network to add this token. Current chain: ${chainId}`
-        );
-        return;
+      // U2U Testnet chain ID is 0x9b4 (2484 in decimal)
+      const u2uTestnetChainId = "0x9b4";
+      if (chainId !== u2uTestnetChainId) {
+        // Try to switch to U2U testnet automatically
+        try {
+          await window.ethereum.request({
+            method: "wallet_switchEthereumChain",
+            params: [{ chainId: u2uTestnetChainId }],
+          });
+        } catch (switchError: any) {
+          // If the chain hasn't been added to the wallet, add it
+          if (switchError.code === 4902) {
+            try {
+              await window.ethereum.request({
+                method: "wallet_addEthereumChain",
+                params: [
+                  {
+                    chainId: u2uTestnetChainId,
+                    chainName: "U2U Testnet",
+                    nativeCurrency: {
+                      name: "U2U",
+                      symbol: "U2U",
+                      decimals: 18,
+                    },
+                    rpcUrls: ["https://rpc-nebulas-testnet.uniultra.xyz"],
+                    blockExplorerUrls: ["https://testnet.u2uscan.xyz"],
+                  },
+                ],
+              });
+            } catch (addError) {
+              alert("Failed to add U2U testnet to your wallet");
+              return;
+            }
+          } else {
+            alert("Please switch to U2U testnet to add this token");
+            return;
+          }
+        }
       }
 
       console.log("Attempting to add token with:", {
@@ -75,7 +106,11 @@ export default function Faucet() {
       });
 
       console.log("Token addition result:", result);
-      alert("🎉 Mock USDT has been added to your wallet!");
+      if (result) {
+        alert("🎉 Mock USDT has been added to your wallet!");
+      } else {
+        alert("Token addition was cancelled or failed");
+      }
     } catch (error) {
       console.error("Detailed error:", error);
       console.error("Error type:", typeof error);
@@ -229,11 +264,19 @@ export default function Faucet() {
             <h3 className="font-semibold text-gray-900 mb-2">How to use:</h3>
             <ul className="text-sm text-gray-600 space-y-1">
               <li>1. Connect your wallet</li>
-              <li>2. Click &quot;Mint 250,000 Mock USDT&quot;</li>
-              <li>3. Confirm the transaction</li>
-              <li>4. Add Mock USDT to your wallet (optional)</li>
-              <li>5. Use Mock USDT to invest in properties</li>
+              <li>2. Switch to U2U Testnet (automatic)</li>
+              <li>3. Click &quot;Mint 250,000 Mock USDT&quot;</li>
+              <li>4. Confirm the transaction</li>
+              <li>5. Add Mock USDT to your wallet</li>
+              <li>6. Use Mock USDT to invest in properties</li>
             </ul>
+            <div className="mt-3 pt-3 border-t border-gray-300">
+              <p className="text-xs text-gray-500">
+                <strong>Network:</strong> U2U Testnet (Chain ID: 2484)
+                <br />
+                <strong>Token Contract:</strong> {USDT_TOKEN.address.slice(0, 10)}...
+              </p>
+            </div>
           </div>
         </div>
       </div>
