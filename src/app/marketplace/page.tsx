@@ -5,7 +5,12 @@ import MarketplaceHeader from "@/app/components/investment/header";
 import SearchBar from "../components/investment/searchBar";
 import FilterSidebar from "../components/investment/filterSidebar";
 import DashBoardPropertyCard from "../components/dashBoard/dashBoardPropertyCard";
+import { useActiveListings } from "../components/dashBoard/useMarketplaceListings";
+import { usePurchaseNFT, useApproveUSDT, useCancelListing } from "../components/dashBoard/useMarketplaceHooks";
+import { formatUSDT, parseUSDT, CONTRACT_ADDRESSES } from "@/lib/contracts";
 import { PropertyData } from "@/lib/hooks";
+import { useAccount } from "wagmi";
+import { Toast, useToast } from "@/components/Toast";
 
 // Mock data (replace with API later)
 const properties = [
@@ -81,9 +86,89 @@ export default function Marketplace() {
     Record<number, boolean>
   >({});
 
+  // Get marketplace data
+  const { data: activeListings, isLoading } = useActiveListings();
+  const { purchaseNFT, isPurchasing } = usePurchaseNFT();
+  const { approveUSDT, isApproving } = useApproveUSDT();
+  const { cancelListing, isCancelling } = useCancelListing();
+  const { address } = useAccount();
+  const { toast, showToast, hideToast } = useToast();
+
   const toggleFilter = () => setIsFilterOpen(!isFilterOpen);
 
-  const filteredProperties = properties; // later: add filters/search here
+  // Convert marketplace listings to PropertyData format for display
+  const convertListingToPropertyData = (listing: any): PropertyData => {
+    return {
+      id: listing.listingId,
+      contractAddress: listing.nftContract,
+      propertyOwner: listing.seller,
+      propertyName: `Property NFT #${listing.tokenId}`,
+      propertySymbol: `NFT${listing.tokenId}`,
+      totalValue: listing.price, // price is already a string
+      totalShares: "1",
+      availableShares: "1", 
+      remainingShares: "1",
+      soldShares: "0",
+      yieldPerBlock: "0",
+      yieldReserve: "0",
+      propertyType: "1",
+      propertyTypeName: "NFT",
+      isActive: listing.active,
+      createdAt: listing.listedAt.toString(),
+      sharePrice: listing.price, // price is already a string
+      soldPercentage: 0,
+      availabilityPercentage: 100,
+      apy: 5.0,
+    };
+  };
+
+  const handlePurchase = async (listingId: number, priceString: string) => {
+    if (!address) {
+      showToast("Please connect your wallet", "warning");
+      return;
+    }
+
+    try {
+      // Convert price string to BigInt
+      const price = BigInt(priceString);
+      
+      // First approve USDT if needed
+      // In production, you'd check current allowance first
+      await approveUSDT(price);
+      
+      // Then purchase the NFT
+      await purchaseNFT(listingId);
+      
+      showToast("NFT purchased successfully! 🎉", "success");
+    } catch (error) {
+      console.error("Failed to purchase NFT:", error);
+      showToast("Failed to purchase NFT. Please check your USDT balance and try again.", "error");
+    }
+  };
+
+  const handleCancelListing = async (listingId: number, propertyName: string) => {
+    if (!address) {
+      showToast("Please connect your wallet", "warning");
+      return;
+    }
+
+    try {
+      await cancelListing(listingId);
+      showToast(`Successfully cancelled listing for ${propertyName}! ✅`, "success");
+    } catch (error) {
+      console.error("Failed to cancel listing:", error);
+      showToast("Failed to cancel listing. Please try again.", "error");
+    }
+  };
+
+  // Show only real marketplace listings (no mock data)
+  const allProperties = [
+    ...(activeListings || []).map((listing: any) => ({ 
+      ...convertListingToPropertyData(listing), 
+      isListing: true,
+      listing 
+    }))
+  ];
 
   return (
     <LayoutGroup>
@@ -108,39 +193,76 @@ export default function Marketplace() {
 
         {/* Cards Grid */}
         <div className="grid gap-6 md:grid-cols-3 lg:grid-cols-4 px-4">
-          {filteredProperties.map((p) => {
-            const mapped = toPropertyData(p);
-            const listed = p.listed === "true";
-            const statusOverride =
-              p.status === "Expired" ? "Expired" : ("Active" as const);
+          {isLoading && (
+            <div className="col-span-full text-center py-8">
+              <p>Loading marketplace listings...</p>
+            </div>
+          )}
+          
+          {allProperties.map((property: any) => {
+            const isRealListing = property.isListing;
+            const listingData = property.listing;
+            
+            // Check if this NFT was listed by the current user
+            const isOwnListing = address && listingData && 
+              listingData.seller.toLowerCase() === address.toLowerCase();
+            
             return (
               <motion.div
-                key={p.id}
-                layoutId={`dashboard-property-${p.id}`}
-                onClick={() => setSelectedId(p.id)}
+                key={`marketplace-${property.id}`}
+                layoutId={`marketplace-property-${property.id}`}
+                onClick={() => setSelectedId(property.id)}
               >
                 <DashBoardPropertyCard
-                  property={mapped}
-                  propertyName={p.name}
-                  isListed={listed}
-                  buyPrice={mapped.sharePrice}
-                  statusOverride={statusOverride}
-                  selected={!!selectedForListing[p.id]}
+                  property={property}
+                  propertyName={isRealListing ? 
+                    `${property.propertyName} (Listed)` : 
+                    property.propertyName
+                  }
+                  isListed={true}
+                  buyPrice={property.sharePrice}
+                  statusOverride="Active"
+                  selected={!!selectedForListing[property.id]}
                   onToggleSelect={(id) => {
                     setSelectedForListing((prev) => ({
                       ...prev,
                       [Number(id)]: !prev[Number(id)],
                     }));
                   }}
-                  onListForSale={() => console.log("list for sale", p.id)}
-                  onBuy={() => console.log("buy", p.id)}
-                  onRedeem={() => console.log("redeem", p.id)}
+                  // Show different actions based on ownership
+                  onBuy={!isOwnListing ? () => {
+                    if (isRealListing && listingData) {
+                      handlePurchase(listingData.listingId, listingData.price);
+                    } else {
+                      console.log("buy mock property", property.id);
+                    }
+                  } : undefined}
+                  onCancelListing={isOwnListing ? () => {
+                    if (listingData) {
+                      handleCancelListing(listingData.listingId, property.propertyName);
+                    }
+                  } : undefined}
+                  onRedeem={() => console.log("redeem", property.id)}
                 />
               </motion.div>
             );
           })}
+          
+          {!isLoading && allProperties.length === 0 && (
+            <div className="col-span-full text-center py-8">
+              <p>No properties available for purchase at the moment.</p>
+            </div>
+          )}
         </div>
       </div>
+      
+      {/* Toast notifications */}
+      <Toast
+        message={toast.message}
+        type={toast.type}
+        isVisible={toast.isVisible}
+        onClose={hideToast}
+      />
     </LayoutGroup>
   );
 }

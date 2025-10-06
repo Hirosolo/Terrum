@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { useRealPropertyData } from "./useRealPropertyData";
+import { useIsNFTListed } from "./useNFTListingStatus";
 import DashBoardPropertyCard from "./dashBoardPropertyCard";
 import type { PropertyData } from "@/lib/hooks";
 
@@ -12,6 +13,8 @@ interface IndividualNFTCardProps {
   selectedForListing: Record<string, boolean>;
   onToggleSelect: (id: string) => void;
   onSelect: (id: string) => void;
+  onListForSale: (nftContract: string, tokenId: number, name: string, currentPrice: bigint) => void;
+  onCancelListing: (nftContract: string, tokenId: number, name: string) => void;
 }
 
 interface RawPropertyData {
@@ -106,11 +109,19 @@ export default function IndividualNFTCard({
   selectedForListing,
   onToggleSelect,
   onSelect,
+  onListForSale,
+  onCancelListing,
 }: IndividualNFTCardProps) {
   const { data: propertyData } = useRealPropertyData({
     propertyAddress,
     userAddress,
   });
+  
+  // Check if this specific NFT is listed on marketplace
+  const { isListed, listingId, listingPrice } = useIsNFTListed(
+    propertyAddress, 
+    tokenIndex + 1 // Convert to 1-indexed token ID
+  );
 
   // Don't render if user doesn't own any NFTs for this property
   if (!propertyData) {
@@ -118,9 +129,12 @@ export default function IndividualNFTCard({
   }
 
   const mapped = toPropertyData(propertyData, tokenIndex);
-  const listed = propertyData.listed === "true";
+  const listed = isListed; // Use real listing status instead of mock
   const statusOverride =
     propertyData.status === "Expired" ? "Expired" : ("Active" as const);
+  
+  // Use listing price if available, otherwise use share price
+  const displayPrice = listingPrice || BigInt(mapped.sharePrice);
 
   const uniqueId = `${propertyAddress}-${tokenIndex}`;
 
@@ -139,11 +153,29 @@ export default function IndividualNFTCard({
         property={mapped}
         propertyName={`${propertyData.name} #${tokenIndex + 1}`} // Add token number
         isListed={listed}
-        buyPrice={BigInt(mapped.sharePrice)}
+        buyPrice={displayPrice}
         statusOverride={statusOverride}
         selected={!!selectedForListing[uniqueId]}
         onToggleSelect={() => {
           onToggleSelect(uniqueId);
+        }}
+        onListForSale={() => {
+          onListForSale(
+            propertyAddress,
+            tokenIndex + 1, // NFT token ID (1-indexed)
+            `${propertyData.name} #${tokenIndex + 1}`,
+            BigInt(mapped.sharePrice)
+          );
+        }}
+        onCancelListing={() => {
+          if (listingId) {
+            // Pass the actual listing ID for cancellation
+            onCancelListing(
+              propertyAddress,
+              listingId, // Use listing ID instead of token ID
+              `${propertyData.name} #${tokenIndex + 1}`
+            );
+          }
         }}
       />
     </motion.div>

@@ -5,8 +5,11 @@ import { AnimatePresence, LayoutGroup, motion } from "framer-motion";
 import { useAccount } from "wagmi";
 import { PROPERTY_ADDRESSES } from "@/lib/contracts";
 import PropertyNFTs from "./PropertyNFTs";
+import ListingModal from "./ListingModal";
+import { useListNFT, useApproveNFT, useNFTApproval, useCancelListing } from "./useMarketplaceHooks";
 import { FiSearch } from "react-icons/fi";
 import { ChevronDown } from "lucide-react";
+import { Toast, useToast } from "@/components/Toast";
 
 export default function MyPositionSection() {
   const [search, setSearch] = useState("");
@@ -14,9 +17,74 @@ export default function MyPositionSection() {
   const [selectedForListing, setSelectedForListing] = useState<
     Record<string, boolean>
   >({});
+  
+  // Listing modal state
+  const [isListingModalOpen, setIsListingModalOpen] = useState(false);
+  const [listingNFT, setListingNFT] = useState<{
+    nftContract: string;
+    tokenId: number;
+    name: string;
+    currentPrice: string; // Changed from bigint to string
+  } | null>(null);
 
-  // Get connected wallet address
+    // Get connected wallet address
   const { address: userAddress } = useAccount();
+  const { toast, showToast, hideToast } = useToast();
+  
+  // Initialize marketplace hooks
+  const { listNFT, isListing } = useListNFT();
+  const { approveNFT, isApproving } = useApproveNFT();
+  const { cancelListing, isCancelling } = useCancelListing();
+
+  // Handle listing NFT
+  const handleListForSale = (nftContract: string, tokenId: number, name: string, currentPrice: bigint) => {
+    setListingNFT({ nftContract, tokenId, name, currentPrice: currentPrice.toString() });
+    setIsListingModalOpen(true);
+  };
+
+  const handleConfirmListing = async (priceUSDT: string) => {
+    if (!listingNFT) return;
+    
+    try {
+      // Step 1: First approve the NFT for marketplace (if not already approved)
+      console.log("Approving NFT for marketplace...");
+      await approveNFT(listingNFT.nftContract, listingNFT.tokenId);
+      
+      // Wait a bit for the approval transaction to be mined
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      
+      // Step 2: Then list the NFT
+      console.log("Listing NFT on marketplace...");
+      await listNFT(listingNFT.nftContract, listingNFT.tokenId, priceUSDT);
+      
+      // Show success message
+      showToast("NFT listed successfully! 🎉", "success");
+      
+      // Close modal and refresh data
+      setIsListingModalOpen(false);
+      setListingNFT(null);
+      
+      // Force refresh of the page to update listing status
+      // In production, you'd use React Query invalidation
+      setTimeout(() => window.location.reload(), 2000);
+    } catch (error) {
+      console.error("Failed to list NFT:", error);
+      showToast("Failed to list NFT. The process requires two transactions: 1) Approve NFT for marketplace, 2) List NFT. Please try again.", "error");
+    }
+  };
+
+    const handleCancelListing = async (nftContract: string, listingId: number, name: string) => {
+    try {
+      await cancelListing(listingId);
+      showToast(`Successfully cancelled listing for ${name}! ✅`, "success");
+      
+      // Refresh to update the UI
+      setTimeout(() => window.location.reload(), 2000);
+    } catch (error) {
+      console.error("Failed to cancel listing:", error);
+      showToast("Failed to cancel listing. Please try again.", "error");
+    }
+  };
 
   // If wallet not connected, show connect message
   if (!userAddress) {
@@ -98,10 +166,35 @@ export default function MyPositionSection() {
                 }));
               }}
               onSelect={(id: string) => setSelectedId(id)}
+              onListForSale={handleListForSale}
+              onCancelListing={handleCancelListing}
             />
           ))}
         </motion.div>
+
+        {/* Listing Modal */}
+        {listingNFT && (
+          <ListingModal
+            isOpen={isListingModalOpen}
+            onClose={() => {
+              setIsListingModalOpen(false);
+              setListingNFT(null);
+            }}
+            onConfirm={handleConfirmListing}
+            nftName={listingNFT.name}
+            currentPrice={listingNFT.currentPrice}
+            isListing={isListing}
+          />
+        )}
       </section>
+      
+      {/* Toast notifications */}
+      <Toast
+        message={toast.message}
+        type={toast.type}
+        isVisible={toast.isVisible}
+        onClose={hideToast}
+      />
     </LayoutGroup>
   );
 }

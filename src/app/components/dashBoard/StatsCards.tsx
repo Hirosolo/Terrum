@@ -52,7 +52,7 @@ export default function StatsCards({
   const totalInvestment =
     portfolioStats?.totalInvestment ?? (parseFloat(activeProperty) || 0);
   const monthlyEarnings =
-    portfolioStats?.monthlyEarnings ?? (parseFloat(rentalYield) || 7.165);
+    portfolioStats?.monthlyEarnings ?? (parseFloat(rentalYield) || 2.11);
   const totalBalance =
     portfolioStats?.totalBalance ?? availableToClaim + totalInvestment;
 

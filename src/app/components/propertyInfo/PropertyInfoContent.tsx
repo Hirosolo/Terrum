@@ -16,6 +16,7 @@ import {
   calculateMonthlyEarnings,
   calculateAnnualEarnings 
 } from "@/lib/utils";
+import { Toast, useToast } from "@/components/Toast";
 
 type PropertyInfoContentProps = {
   property: PropertyData;
@@ -28,6 +29,7 @@ export default function PropertyInfoContent({
   const { address: userAddress, isConnected } = useAccount();
   const chainId = useChainId();
   const { switchChain, isPending: isSwitching } = useSwitchChain();
+  const { toast, showToast, hideToast } = useToast();
   const { investInProperty, isPending, isConfirming, isSuccess, error } =
     usePurchaseShares();
 
@@ -138,7 +140,7 @@ export default function PropertyInfoContent({
   // Handle approval
   const handleApproval = async () => {
     if (!isConnected || !userAddress) {
-      alert("Please connect your wallet first!");
+      showToast("Please connect your wallet first!", "warning");
       return;
     }
 
@@ -160,12 +162,12 @@ export default function PropertyInfoContent({
   // Handle purchase
   const handlePurchase = async () => {
     if (!isConnected || !userAddress) {
-      alert("Please connect your wallet first!");
+      showToast("Please connect your wallet first!", "warning");
       return;
     }
 
     if (needsApproval) {
-      alert("Please approve USDT spending first!");
+      showToast("Please approve USDT spending first!", "warning");
       return;
     }
 
@@ -389,6 +391,14 @@ export default function PropertyInfoContent({
           </div>
         </div>
       </div>
+      
+      {/* Toast notifications */}
+      <Toast
+        message={toast.message}
+        type={toast.type}
+        isVisible={toast.isVisible}
+        onClose={hideToast}
+      />
     </div>
   );
 }

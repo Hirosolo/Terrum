@@ -18,7 +18,7 @@ export function useUserPortfolioStats() {
             totalInvestment: 0,
             availableToClaim: 0,
             totalBalance: 0,
-            monthlyEarnings: 120.50, // Mock monthly earnings
+            monthlyEarnings: 2.11, // Mock monthly earnings
           };
         }
 
@@ -125,14 +125,14 @@ export function useUserPortfolioStats() {
         totalInvestment: totalInvestment.toFixed(2),
         availableToClaim: availableToClaim.toFixed(6),
         totalBalance: totalBalance.toFixed(2),
-        monthlyEarnings: 7.165,
+        monthlyEarnings: 2.11,
       });
 
       return {
         totalInvestment,
         availableToClaim,
         totalBalance,
-        monthlyEarnings: 120.50, // Mock monthly earnings
+        monthlyEarnings: 2.11, // Mock monthly earnings
       };
       
       } catch (error) {
@@ -142,7 +142,7 @@ export function useUserPortfolioStats() {
           totalInvestment: 0,
           availableToClaim: 0,
           totalBalance: 0,
-          monthlyEarnings: 120.50, // Mock monthly earnings
+          monthlyEarnings: 2.11, // Mock monthly earnings
         };
       }
     },

@@ -9,6 +9,8 @@ interface PropertyNFTsProps {
   selectedForListing: Record<string, boolean>;
   onToggleSelect: (id: string) => void;
   onSelect: (id: string) => void;
+  onListForSale: (nftContract: string, tokenId: number, name: string, currentPrice: bigint) => void;
+  onCancelListing: (nftContract: string, tokenId: number, name: string) => void;
 }
 
 export default function PropertyNFTs({
@@ -17,6 +19,8 @@ export default function PropertyNFTs({
   selectedForListing,
   onToggleSelect,
   onSelect,
+  onListForSale,
+  onCancelListing,
 }: PropertyNFTsProps) {
   const { data: propertyData } = useRealPropertyData({
     propertyAddress,
@@ -38,6 +42,8 @@ export default function PropertyNFTs({
       selectedForListing={selectedForListing}
       onToggleSelect={onToggleSelect}
       onSelect={onSelect}
+      onListForSale={onListForSale}
+      onCancelListing={onCancelListing}
     />
   ));
 
