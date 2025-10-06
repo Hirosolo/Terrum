@@ -63,6 +63,19 @@ contract Land is ERC721, ERC721Enumerable, Ownable, ReentrancyGuard, Pausable {
         _;
     }
 
+    modifier canWithdrawYield() {
+        require(block.number >= i_startDate, "Project not started yet");
+        require(balanceOf(msg.sender) > 0, "No tokens owned");
+        
+        // Calculate yield amount for this user
+        uint256 blocksPassed = block.number - lastWithdraw[msg.sender];
+        uint256 yieldAmount = yieldRate * blocksPassed * balanceOf(msg.sender);
+        
+        require(yieldAmount > 0, "No yield to withdraw");
+        require(paymentStableToken.balanceOf(address(this)) >= yieldAmount, "Insufficient contract balance for your withdrawal");
+        _;
+    }
+
     modifier hasTokens(address user) {
         require(balanceOf(user) > 0, "No tokens to redeem");
         _;
@@ -109,16 +122,16 @@ contract Land is ERC721, ERC721Enumerable, Ownable, ReentrancyGuard, Pausable {
         emit Minted(to, tokenIdCounter - 1);
     }
 
-    function withdrawYield() external  nonReentrant haveYieldReserved {
-        require(balanceOf(msg.sender) > 0, "No tokens owned");
-
+    function withdrawYield() external nonReentrant canWithdrawYield {
         uint256 blocksPassed = block.number - lastWithdraw[msg.sender];
-        uint256 yieldAmount = (yieldRate * blocksPassed * balanceOf(msg.sender));
+        uint256 yieldAmount = yieldRate * blocksPassed * balanceOf(msg.sender);
 
-        require(yieldAmount > 0, "No yield to withdraw");
-
+        // Transfer yield to user
         paymentStableToken.transfer(msg.sender, yieldAmount);
+        
+        // Update last withdrawal block
         lastWithdraw[msg.sender] = block.number;
+        
         emit YieldWithdrawn(msg.sender, yieldAmount);
     }
 
@@ -158,8 +171,56 @@ contract Land is ERC721, ERC721Enumerable, Ownable, ReentrancyGuard, Pausable {
         return paymentStableToken.balanceOf(address(this));
     }
 
+    /**
+     * @dev Get available yield for a specific user
+     * @param user Address to check yield for
+     * @return yieldAmount Available yield amount
+     * @return canWithdraw Whether user can withdraw (has tokens and project started)
+     * @return hasBalance Whether contract has enough balance to pay
+     */
+    function getAvailableYield(address user) external view returns (
+        uint256 yieldAmount,
+        bool canWithdraw,
+        bool hasBalance
+    ) {
+        // Check if project has started and user has tokens
+        canWithdraw = (block.number >= i_startDate) && (balanceOf(user) > 0);
+        
+        if (canWithdraw) {
+            uint256 blocksPassed = block.number - lastWithdraw[user];
+            yieldAmount = yieldRate * blocksPassed * balanceOf(user);
+            hasBalance = paymentStableToken.balanceOf(address(this)) >= yieldAmount;
+        } else {
+            yieldAmount = 0;
+            hasBalance = false;
+        }
+    }
+
     function getCurrentHolders() external view returns (uint256) {
         return totalSupply();
+    }
+
+    /**
+     * @dev Get user's yield information
+     * @param user Address to check
+     * @return tokensOwned Number of tokens owned by user
+     * @return lastWithdrawBlock Block number of user's last withdrawal
+     * @return yieldPerBlockPerToken Current yield rate per block per token
+     * @return blocksSinceLastWithdraw Blocks passed since last withdrawal
+     * @return currentYieldAccrued Current accrued yield amount
+     */
+    function getUserYieldInfo(address user) external view returns (
+        uint256 tokensOwned,
+        uint256 lastWithdrawBlock,
+        uint256 yieldPerBlockPerToken,
+        uint256 blocksSinceLastWithdraw,
+        uint256 currentYieldAccrued
+    ) {
+        tokensOwned = balanceOf(user);
+        lastWithdrawBlock = lastWithdraw[user];
+        yieldPerBlockPerToken = yieldRate;
+        blocksSinceLastWithdraw = block.number - lastWithdrawBlock;
+        currentYieldAccrued = yieldRate * blocksSinceLastWithdraw * tokensOwned;
     }
 
     /**

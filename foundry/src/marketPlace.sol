@@ -159,6 +159,13 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable {
 
         IERC721 nft = IERC721(listing.nftContract);
         require(nft.ownerOf(listing.tokenId) == listing.seller, "NFT no longer owned by seller");
+        
+        // Re-check approval before purchase (seller might have revoked approval)
+        require(
+            nft.isApprovedForAll(listing.seller, address(this)) || 
+            nft.getApproved(listing.tokenId) == address(this),
+            "Marketplace no longer approved to transfer NFT"
+        );
 
         IERC20 paymentToken = IERC20(listing.paymentToken);
         
