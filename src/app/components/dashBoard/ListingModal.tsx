@@ -79,7 +79,7 @@ export default function ListingModal({
                 placeholder={suggestedPrice}
                 min="0"
                 step="0.01"
-                className="w-full pl-8 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent placeholder-gray-400"
+                className="w-full pl-8 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent placeholder-gray-400 text-black"
                 disabled={isSubmitting}
                 required
               />
