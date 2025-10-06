@@ -14,28 +14,33 @@ const client = createPublicClient({
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const listingId = params.id;
+  const { id } = await params;
+  const listingId = id;
   
   try {
-    // Call the actual marketplace contract to get listing data
+    // Call the marketplace contract to get listing info
     const listing = await client.readContract({
       address: CONTRACT_ADDRESSES.MARKETPLACE as `0x${string}`,
       abi: MarketplaceABI,
       functionName: 'getListing',
       args: [BigInt(listingId)],
-    }) as any;
+    }) as [string, string, bigint, string, bigint, boolean]; // [seller, nftContract, tokenId, paymentToken, price, isActive]
 
+    // Destructure the tuple result
+    const [seller, nftContract, tokenId, paymentToken, price, isActive] = listing;
+    
     // Convert the result to the expected format
     const formattedListing = {
-      seller: listing.seller,
-      nftContract: listing.nftContract,
-      tokenId: listing.tokenId.toString(),
-      paymentToken: listing.paymentToken,
-      price: listing.price.toString(), // Convert BigInt to string
-      active: listing.active,
-      listedAt: Number(listing.listedAt),
+      seller,
+      nftContract,
+      tokenId: tokenId.toString(),
+      paymentToken,
+      price: price.toString(), // Convert BigInt to string
+      active: isActive,
+      listedAt: Date.now(), // Use current timestamp as placeholder
+      listingId: Number(listingId),
     };
     
     return NextResponse.json(formattedListing);

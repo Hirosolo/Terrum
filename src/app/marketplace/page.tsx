@@ -96,8 +96,20 @@ export default function Marketplace() {
 
   const toggleFilter = () => setIsFilterOpen(!isFilterOpen);
 
+  // Define the marketplace listing interface
+  interface MarketplaceListing {
+    listingId: number;
+    seller: string;
+    nftContract: string;
+    tokenId: number;
+    paymentToken: string;
+    price: string;
+    active: boolean;
+    listedAt: number;
+  }
+
   // Convert marketplace listings to PropertyData format for display
-  const convertListingToPropertyData = (listing: any): PropertyData => {
+  const convertListingToPropertyData = (listing: MarketplaceListing): PropertyData => {
     return {
       id: listing.listingId,
       contractAddress: listing.nftContract,
@@ -163,7 +175,7 @@ export default function Marketplace() {
 
   // Show only real marketplace listings (no mock data)
   const allProperties = [
-    ...(activeListings || []).map((listing: any) => ({ 
+    ...(activeListings || []).map((listing: MarketplaceListing) => ({ 
       ...convertListingToPropertyData(listing), 
       isListing: true,
       listing 
@@ -199,7 +211,7 @@ export default function Marketplace() {
             </div>
           )}
           
-          {allProperties.map((property: any) => {
+          {allProperties.map((property: PropertyData & { isListing?: boolean; listing?: MarketplaceListing }) => {
             const isRealListing = property.isListing;
             const listingData = property.listing;
             

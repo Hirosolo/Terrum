@@ -40,20 +40,24 @@ export function useListing(listingId: number) {
     },
   });
 
-  const listing = data as any;
+  // Type the marketplace listing as a tuple based on contract return
+  const listing = data as [string, string, bigint, string, bigint, boolean] | undefined;
   
   if (!listing) return { listing: null, isLoading, error };
+
+  // Destructure the tuple
+  const [seller, nftContract, tokenId, paymentToken, price, active] = listing;
 
   return {
     listing: {
       listingId,
-      seller: listing.seller,
-      nftContract: listing.nftContract,
-      tokenId: Number(listing.tokenId),
-      paymentToken: listing.paymentToken,
-      price: listing.price.toString(), // Convert BigInt to string
-      active: listing.active,
-      listedAt: Number(listing.listedAt),
+      seller,
+      nftContract,
+      tokenId: Number(tokenId),
+      paymentToken,
+      price: price.toString(), // Convert BigInt to string
+      active,
+      listedAt: Date.now(), // Use current timestamp as placeholder
     } as MarketplaceListing,
     isLoading,
     error,
