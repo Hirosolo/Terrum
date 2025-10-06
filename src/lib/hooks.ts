@@ -3,8 +3,8 @@
 import { useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
 import { useQuery } from '@tanstack/react-query'
 import { LandTokenizerABI, LandABI, MockUSDTABI } from './abis'
-import { CONTRACT_ADDRESSES, PROPERTY_TYPES } from './contracts'
-import { baseSepolia } from './wagmi'
+import { CONTRACT_ADDRESSES, PROPERTY_TYPES, PROPERTY_ADDRESSES } from './contracts'
+import { u2uTestnet } from './wagmi'
 
 // Types for property data
 export interface PropertyInfo {
@@ -77,7 +77,7 @@ export function useGetTotalProperties() {
     abi: LandTokenizerABI,
     address: CONTRACT_ADDRESSES.LAND_TOKENIZER as `0x${string}`,
     functionName: 'getTotalProperties',
-    chainId: baseSepolia.id,
+    chainId: u2uTestnet.id,
   })
 }
 
@@ -88,132 +88,145 @@ export function useGetPropertyInfo(propertyId: number) {
     address: CONTRACT_ADDRESSES.LAND_TOKENIZER as `0x${string}`,
     functionName: 'getPropertyInfo',
     args: [BigInt(propertyId)],
-    chainId: baseSepolia.id,
+    chainId: u2uTestnet.id,
   })
 }
 
-// Clean implementation of useGetAllProperties hook
+// Optimized implementation using hardcoded addresses - no tokenizer dependency
 export function useGetAllProperties() {
   return useQuery({
     queryKey: ['allProperties'],
     queryFn: async (): Promise<PropertyData[]> => {
       try {
-        console.log('Fetching properties from blockchain...')
+        console.log('Fetching properties directly from hardcoded addresses...')
         
         // Import viem client here to avoid SSR issues
         const { createPublicClient, http } = await import('viem')
         
         const client = createPublicClient({
-          chain: baseSepolia,
-          transport: http('https://sepolia.base.org')
+          chain: u2uTestnet,
+          transport: http('https://rpc-nebulas-testnet.uniultra.xyz')
         })
-        
-        // First get total number of properties
-        const totalProperties = await client.readContract({
-          address: CONTRACT_ADDRESSES.LAND_TOKENIZER as `0x${string}`,
-          abi: LandTokenizerABI,
-          functionName: 'getTotalProperties',
-        }) as bigint
-        
-        const totalCount = Number(totalProperties)
-        console.log(`Total properties found: ${totalCount}`)
-        
-        if (totalCount === 0) {
-          return []
-        }
         
         const results: PropertyData[] = []
         
-        // Loop through each property ID (starting from 1)
-        for (let propertyId = 1; propertyId <= totalCount; propertyId++) {
+        // Directly loop through our hardcoded property addresses
+        for (let i = 0; i < PROPERTY_ADDRESSES.length; i++) {
+          const propertyAddress = PROPERTY_ADDRESSES[i]
+          const propertyId = i + 1
+          
           try {
-            console.log(`Fetching property ${propertyId}...`)
+            console.log(`Fetching property ${propertyId} from ${propertyAddress}...`)
             
-            // Get basic property info from tokenizer
-            const basicInfo = await client.readContract({
-              address: CONTRACT_ADDRESSES.LAND_TOKENIZER as `0x${string}`,
-              abi: LandTokenizerABI,
-              functionName: 'getPropertyBasics',
-              args: [BigInt(propertyId)],
-            })
-            
-            const [landContract, paymentToken, propertyName, totalValue, totalSupply, active] = basicInfo as [string, string, string, bigint, bigint, boolean]
-            
-            console.log(`Property ${propertyId}:`, {
-              landContract,
+            // Get property data directly from the Land contract
+            const [
               propertyName,
-              active
-            })
-            
-            if (!active) {
-              console.log(`Property ${propertyId} is not active, skipping`)
-              continue
-            }
-            
-            // Get land type and yield rate from the Land contract
-            let landType = BigInt(1) // Default to Residential
-            let yieldRate = BigInt(0) // Yield per block per token
-            
-            try {
-              console.log(`Getting land type and yield rate for property ${propertyId} from contract ${landContract}`)
-              
-              // Get land type
-              landType = await client.readContract({
-                address: landContract as `0x${string}`,
+              propertySymbol,
+              landType,
+              initialValue,
+              yieldRate,
+              maxSupply
+            ] = await Promise.all([
+              client.readContract({
+                address: propertyAddress as `0x${string}`,
+                abi: LandABI,
+                functionName: 'name',
+              }),
+              client.readContract({
+                address: propertyAddress as `0x${string}`,
+                abi: LandABI,
+                functionName: 'symbol',
+              }),
+              client.readContract({
+                address: propertyAddress as `0x${string}`,
                 abi: LandABI,
                 functionName: 'i_landType',
-              }) as bigint
-              
-              // Get yield rate
-              yieldRate = await client.readContract({
-                address: landContract as `0x${string}`,
+              }),
+              client.readContract({
+                address: propertyAddress as `0x${string}`,
+                abi: LandABI,
+                functionName: 'i_initialValue',
+              }),
+              client.readContract({
+                address: propertyAddress as `0x${string}`,
                 abi: LandABI,
                 functionName: 'yieldRate',
-              }) as bigint
-              
-              console.log(`Property ${propertyId} - land type: ${landType}, yield rate: ${yieldRate}`)
-            } catch (landContractError) {
-              console.error(`Failed to get land contract data for property ${propertyId}:`, landContractError)
-            }
+              }),
+              client.readContract({
+                address: propertyAddress as `0x${string}`,
+                abi: LandABI,
+                functionName: 'i_totalSupply',
+              })
+            ])
             
-            // Calculate basic values
-            const propertySymbol = propertyName.substring(0, 5).toUpperCase().replace(/\s/g, '')
-            const sharePrice = totalSupply > BigInt(0) ? totalValue / totalSupply : BigInt(0)
+            // Type cast the results
+            const typedPropertyName = propertyName as string
+            const typedPropertySymbol = propertySymbol as string
+            const typedLandType = landType as bigint
+            const typedInitialValue = initialValue as bigint
+            const typedYieldRate = yieldRate as bigint
+            const typedMaxSupply = maxSupply as bigint
+            
+            console.log(`Property ${propertyId}:`, {
+              propertyName: typedPropertyName,
+              propertySymbol: typedPropertySymbol,
+              landType: typedLandType.toString(),
+              initialValue: typedInitialValue.toString(),
+              initialValueUSDT: Number(typedInitialValue) / 1e18,
+              yieldRate: typedYieldRate.toString(),
+              maxSupply: typedMaxSupply.toString()
+            })
+            
+            // Calculate derived values (mint price = property value / max supply)
+            const sharePrice = typedMaxSupply > BigInt(0) ? typedInitialValue / typedMaxSupply : BigInt(0)
+            
+            console.log(`Property ${propertyId} calculations:`, {
+              sharePrice: sharePrice.toString(),
+              sharePriceUSDT: Number(sharePrice) / 1e18,
+              shouldBe: typedMaxSupply > BigInt(0) ? `${Number(typedInitialValue)} / ${Number(typedMaxSupply)} = ${Number(typedInitialValue) / Number(typedMaxSupply)}` : 'N/A'
+            })
             const soldShares = BigInt(0) // For now, assume no shares are sold
-            const availableShares = totalSupply
+            const availableShares = typedMaxSupply
             const soldPercentage = 0
             const availabilityPercentage = 100
             
-            // Calculate real APY from yield rate
-            // yieldRate is per block per token, convert to annual percentage
-            // Assuming 12 second block time: (365 * 24 * 60 * 60) / 12 = 2,628,000 blocks per year
+            // Calculate APY from yield rate
+            // Using same calculation as deployment script: 12 second blocks = 2,628,000 blocks per year
             const blocksPerYear = 2628000
             let apy = 0
-            if (sharePrice > BigInt(0) && yieldRate > BigInt(0)) {
-              const annualYieldPerToken = yieldRate * BigInt(blocksPerYear)
+            if (sharePrice > BigInt(0) && typedYieldRate > BigInt(0)) {
+              const annualYieldPerToken = typedYieldRate * BigInt(blocksPerYear)
               apy = Number(annualYieldPerToken * BigInt(100)) / Number(sharePrice)
             }
             
+            console.log(`Property ${propertyId} APY calculation:`, {
+              sharePrice: sharePrice.toString(),
+              yieldRate: typedYieldRate.toString(),
+              blocksPerYear,
+              annualYieldPerToken: typedYieldRate > BigInt(0) ? (typedYieldRate * BigInt(blocksPerYear)).toString() : '0',
+              apy: apy
+            })
+            
             // Map land type to property type name
-            const propertyTypeData = PROPERTY_TYPES[Number(landType)]
-            const propertyTypeName = propertyTypeData?.name || `Type ${Number(landType)}`
+            const propertyTypeData = PROPERTY_TYPES[Number(typedLandType)]
+            const propertyTypeName = propertyTypeData?.name || `Type ${Number(typedLandType)}`
             
             const propertyData: PropertyData = {
               id: propertyId,
-              contractAddress: landContract,
+              contractAddress: propertyAddress,
               propertyOwner: CONTRACT_ADDRESSES.DEPLOYER,
-              propertyName: propertyName,
-              propertySymbol: propertySymbol,
-              totalValue: totalValue.toString(),
-              totalShares: totalSupply.toString(),
-              availableShares: availableShares.toString(),
-              remainingShares: availableShares.toString(),
+              propertyName: typedPropertyName,
+              propertySymbol: typedPropertySymbol,
+              totalValue: typedInitialValue.toString(),
+              totalShares: typedMaxSupply.toString(),
+              availableShares: typedMaxSupply.toString(),
+              remainingShares: typedMaxSupply.toString(),
               soldShares: soldShares.toString(),
-              yieldPerBlock: "0",
+              yieldPerBlock: typedYieldRate.toString(),
               yieldReserve: "0",
-              propertyType: landType.toString(),
+              propertyType: typedLandType.toString(),
               propertyTypeName: propertyTypeName,
-              isActive: active,
+              isActive: true, // All our deployed properties are active
               createdAt: Date.now().toString(),
               sharePrice: sharePrice.toString(),
               soldPercentage,
@@ -221,20 +234,20 @@ export function useGetAllProperties() {
               apy
             }
             
-            console.log(`Property ${propertyId} final data:`, {
-              id: propertyData.id,
-              propertyTypeName: propertyData.propertyTypeName,
-              landType: landType.toString()
+            console.log(`Property ${propertyId} processed:`, {
+              name: propertyData.propertyName,
+              type: propertyData.propertyTypeName,
+              apy: propertyData.apy
             })
             
             results.push(propertyData)
             
           } catch (propertyError) {
-            console.error(`Error fetching property ${propertyId}:`, propertyError)
+            console.error(`Error fetching property ${propertyId} at ${propertyAddress}:`, propertyError)
           }
         }
         
-        console.log(`Successfully fetched ${results.length} properties`)
+        console.log(`Successfully fetched ${results.length} properties using direct approach`)
         return results
         
       } catch (error) {
@@ -276,42 +289,90 @@ function getMockProperties(): PropertyData[] {
   ]
 }
 
-// Get property details hook
+// Get property details hook using direct address approach
 export function useGetPropertyDetails(propertyId: number) {
   return useQuery({
     queryKey: ['propertyDetails', propertyId],
     queryFn: async (): Promise<PropertyInfo | null> => {
       try {
+        // Check if propertyId is valid (1-8)
+        if (propertyId < 1 || propertyId > PROPERTY_ADDRESSES.length) {
+          console.error(`Invalid property ID: ${propertyId}`)
+          return null
+        }
+        
+        const propertyAddress = PROPERTY_ADDRESSES[propertyId - 1]
+        
         const { createPublicClient, http } = await import('viem')
         
         const client = createPublicClient({
-          chain: baseSepolia,
-          transport: http('https://sepolia.base.org')
+          chain: u2uTestnet,
+          transport: http('https://rpc-nebulas-testnet.uniultra.xyz')
         })
         
-        const info = await client.readContract({
-          address: CONTRACT_ADDRESSES.LAND_TOKENIZER as `0x${string}`,
-          abi: LandTokenizerABI,
-          functionName: 'getPropertyInfo',
-          args: [BigInt(propertyId)],
-        })
-        
-        const [contractAddress, paymentToken, propertyName, propertySymbol, totalValue, totalSupply, yieldRate, startDate, landType, deployer, deployedAt, active] = info as [string, string, string, string, bigint, bigint, bigint, bigint, bigint, string, bigint, boolean]
-        
-        return {
-          contractAddress,
-          propertyOwner: deployer,
+        // Get property data directly from the Land contract
+        const [
           propertyName,
           propertySymbol,
-          totalValue: totalValue.toString(),
-          totalShares: totalSupply.toString(),
-          availableShares: totalSupply.toString(),
-          yieldPerBlock: yieldRate.toString(),
+          landType,
+          initialValue,
+          yieldRate,
+          maxSupply
+        ] = await Promise.all([
+          client.readContract({
+            address: propertyAddress as `0x${string}`,
+            abi: LandABI,
+            functionName: 'name',
+          }),
+          client.readContract({
+            address: propertyAddress as `0x${string}`,
+            abi: LandABI,
+            functionName: 'symbol',
+          }),
+          client.readContract({
+            address: propertyAddress as `0x${string}`,
+            abi: LandABI,
+            functionName: 'i_landType',
+          }),
+          client.readContract({
+            address: propertyAddress as `0x${string}`,
+            abi: LandABI,
+            functionName: 'i_initialValue',
+          }),
+          client.readContract({
+            address: propertyAddress as `0x${string}`,
+            abi: LandABI,
+            functionName: 'yieldRate',
+          }),
+          client.readContract({
+            address: propertyAddress as `0x${string}`,
+            abi: LandABI,
+            functionName: 'i_totalSupply',
+          })
+        ])
+        
+        // Type cast the results
+        const typedPropertyName = propertyName as string
+        const typedPropertySymbol = propertySymbol as string
+        const typedLandType = landType as bigint
+        const typedInitialValue = initialValue as bigint
+        const typedYieldRate = yieldRate as bigint
+        const typedMaxSupply = maxSupply as bigint
+        
+        return {
+          contractAddress: propertyAddress,
+          propertyOwner: CONTRACT_ADDRESSES.DEPLOYER,
+          propertyName: typedPropertyName,
+          propertySymbol: typedPropertySymbol,
+          totalValue: typedInitialValue.toString(),
+          totalShares: typedMaxSupply.toString(),
+          availableShares: typedMaxSupply.toString(),
+          yieldPerBlock: typedYieldRate.toString(),
           yieldReserve: "0",
-          propertyType: landType.toString(),
-          isActive: active,
-          createdAt: deployedAt.toString(),
-          sharePrice: (totalValue / totalSupply).toString()
+          propertyType: typedLandType.toString(),
+          isActive: true,
+          createdAt: Date.now().toString(),
+          sharePrice: (typedInitialValue / typedMaxSupply).toString()
         }
       } catch (error) {
         console.error('Error fetching property details:', error)
@@ -332,19 +393,20 @@ export function useInvestInProperty() {
   })
   
   const investInProperty = async (propertyAddress: string, shareAmount: number, userAddress: string) => {
-    // Note: Land contract's mint() function only mints 1 NFT per call
+    // Land contract's mint() function mints 1 NFT per call
     // For multiple NFTs, we need to call mint() multiple times
-    // For now, let's mint just 1 NFT - we can enhance this later for batch minting
+    // For now, let's mint just 1 NFT - enhance later for batch minting if needed
     
     if (shareAmount > 1) {
-      console.warn(`Requested ${shareAmount} NFTs, but currently only minting 1 NFT per transaction. Consider implementing batch minting.`)
+      console.warn(`Requested ${shareAmount} NFTs, but currently only minting 1 NFT per transaction.`)
     }
     
     writeContract({
       address: propertyAddress as `0x${string}`,
       abi: LandABI,
       functionName: 'mint',
-      args: [userAddress], // mint(address to) - recipient address
+      args: [userAddress as `0x${string}`], // mint(address to) - recipient address
+      chainId: u2uTestnet.id,
     })
   }
   
@@ -397,7 +459,7 @@ export function useUSDTBalance(address?: string) {
     address: CONTRACT_ADDRESSES.USDT as `0x${string}`,
     functionName: 'balanceOf',
     args: address ? [address] : undefined,
-    chainId: baseSepolia.id,
+    chainId: u2uTestnet.id,
   })
 }
 
@@ -435,7 +497,7 @@ export function useUSDTAllowance(owner?: string, spender?: string) {
     address: CONTRACT_ADDRESSES.USDT as `0x${string}`,
     functionName: 'allowance',
     args: owner && spender ? [owner, spender] : undefined,
-    chainId: baseSepolia.id,
+    chainId: u2uTestnet.id,
   })
 }
 
@@ -446,7 +508,7 @@ export function useGetTokenStats(landContractAddress?: string) {
     address: landContractAddress as `0x${string}`,
     functionName: 'getTokenStats',
     args: [],
-    chainId: baseSepolia.id,
+    chainId: u2uTestnet.id,
     query: {
       enabled: !!landContractAddress,
     },
@@ -460,7 +522,7 @@ export function useNFTBalance(propertyAddress: string, userAddress?: string) {
     address: propertyAddress as `0x${string}`,
     functionName: 'balanceOf',
     args: [userAddress as `0x${string}`],
-    chainId: baseSepolia.id,
+    chainId: u2uTestnet.id,
     query: {
       enabled: !!propertyAddress && !!userAddress,
     },
@@ -474,7 +536,7 @@ export function usePropertyBalance(propertyAddress: string, userAddress?: string
     address: propertyAddress as `0x${string}`,
     functionName: 'balanceOf',
     args: [userAddress as `0x${string}`],
-    chainId: baseSepolia.id,
+    chainId: u2uTestnet.id,
     query: {
       enabled: !!propertyAddress && !!userAddress,
     },
@@ -488,7 +550,7 @@ export function usePropertyName(propertyAddress: string) {
     address: propertyAddress as `0x${string}`,
     functionName: 'name',
     args: [],
-    chainId: baseSepolia.id,
+    chainId: u2uTestnet.id,
     query: {
       enabled: !!propertyAddress,
     },
@@ -502,7 +564,7 @@ export function usePropertySymbol(propertyAddress: string) {
     address: propertyAddress as `0x${string}`,
     functionName: 'symbol',
     args: [],
-    chainId: baseSepolia.id,
+    chainId: u2uTestnet.id,
     query: {
       enabled: !!propertyAddress,
     },
@@ -516,7 +578,7 @@ export function usePropertyType(propertyAddress: string) {
     address: propertyAddress as `0x${string}`,
     functionName: 'i_landType',
     args: [],
-    chainId: baseSepolia.id,
+    chainId: u2uTestnet.id,
     query: {
       enabled: !!propertyAddress,
     },
@@ -530,7 +592,7 @@ export function usePropertyValue(propertyAddress: string) {
     address: propertyAddress as `0x${string}`,
     functionName: 'i_initialValue',
     args: [],
-    chainId: baseSepolia.id,
+    chainId: u2uTestnet.id,
     query: {
       enabled: !!propertyAddress,
     },
@@ -544,7 +606,7 @@ export function usePropertyYieldRate(propertyAddress: string) {
     address: propertyAddress as `0x${string}`,
     functionName: 'yieldRate',
     args: [],
-    chainId: baseSepolia.id,
+    chainId: u2uTestnet.id,
     query: {
       enabled: !!propertyAddress,
     },
@@ -561,7 +623,7 @@ export function useWithdrawYield(propertyAddress: string) {
       address: propertyAddress as `0x${string}`,
       functionName: 'withdrawYield',
       args: [],
-      chainId: baseSepolia.id,
+      chainId: u2uTestnet.id,
     })
   }
 

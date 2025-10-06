@@ -7,7 +7,6 @@ import {
   usePurchaseShares,
   useUSDTAllowance,
   useApproveUSDT,
-  useGetPropertyInfo,
   useGetTokenStats,
 } from "@/lib/hooks";
 import { formatUSDTSafe, toBigInt } from "@/lib/utils";

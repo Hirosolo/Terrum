@@ -28,7 +28,14 @@ const getPropertyTypeStyles = (typeName: string): string => {
 export default function PropertyCard({ property, onBuy }: PropertyCardProps) {
   // Debug: log what property type name we're actually receiving
   console.log(
-    `PropertyCard for property ${property.id}: propertyTypeName = "${property.propertyTypeName}"`
+    `PropertyCard for property ${property.id}:`,
+    {
+      propertyTypeName: property.propertyTypeName,
+      sharePrice: property.sharePrice,
+      totalValue: property.totalValue,
+      totalShares: property.totalShares,
+      apy: property.apy
+    }
   );
 
   // Get real-time token statistics from Land contract
@@ -129,11 +136,11 @@ export default function PropertyCard({ property, onBuy }: PropertyCardProps) {
           <div>
             <p className="text-gray-500 text-xs">APY</p>
             <p className="font-bold text-green-600 text-sm">
-              {property.apy > 0 ? property.apy.toFixed(2) : "5.50"}%
+              {property.apy > 0 ? property.apy.toFixed(2) : "0.00"}%
             </p>
           </div>
           <div>
-            <p className="text-gray-500 text-xs">Share Price</p>
+            <p className="text-gray-500 text-xs">Mint Price</p>
             <p className="font-bold text-gray-900 text-sm">
               {formatUSDTSafe(toBigInt(property.sharePrice))}
             </p>
