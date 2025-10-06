@@ -124,11 +124,7 @@ export default function DashBoardPropertyCard({
             <span className="text-xs bg-moss-100 text-gray-700 font-semibold px-3 py-1 rounded-full">
               {property.propertyTypeName}
             </span>
-            {listed && (
-              <span className="text-xs bg-green-100 text-green-700 font-semibold px-2 py-1 rounded-full">
-                Listed
-              </span>
-            )}
+          
           </div>
         </div>
 
