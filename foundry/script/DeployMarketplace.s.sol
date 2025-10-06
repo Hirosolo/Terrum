@@ -23,33 +23,6 @@ contract DeployMarketplace is Script {
         Marketplace marketplace = new Marketplace(feeRecipient);
         
         vm.stopBroadcast();
-        
-        console.log("=== DEPLOYMENT SUCCESSFUL ===");
         console.log("Marketplace deployed at:", address(marketplace));
-        console.log("Platform fee (basis points):", marketplace.platformFee());
-        console.log("Fee recipient:", marketplace.feeRecipient());
-        console.log("Owner:", marketplace.owner());
-        
-        // Verify deployment
-        console.log("\n=== VERIFICATION ===");
-        console.log("Marketplace listing counter:", marketplace.listingCounter());
-        console.log("Marketplace paused:", marketplace.paused());
-        
-        console.log("\n=== NEXT STEPS ===");
-        console.log("1. Add the marketplace address to your frontend configuration");
-        console.log("2. Users can now list their Land NFTs for sale");
-        console.log("3. Other users can purchase listed NFTs");
-        console.log("4. Platform will earn 2.5% fee on each sale");
-        
-        // Save deployment info to a file
-        string memory deploymentInfo = string.concat(
-            "MARKETPLACE_ADDRESS=", vm.toString(address(marketplace)), "\n",
-            "PLATFORM_FEE=", vm.toString(marketplace.platformFee()), "\n",
-            "FEE_RECIPIENT=", vm.toString(marketplace.feeRecipient()), "\n",
-            "OWNER=", vm.toString(marketplace.owner()), "\n"
-        );
-        
-        vm.writeFile("marketplace_deployment.env", deploymentInfo);
-        console.log("\nDeployment info saved to: marketplace_deployment.env");
     }
 }

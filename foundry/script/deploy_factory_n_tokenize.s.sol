@@ -19,7 +19,7 @@ contract DeployFactoryWithProperties is Script {
         console.log("Balance:", deployer.balance / 1e18, "ETH");
         
         // Use existing Mock USDT
-        address usdtAddress = 0xc6ed2ebaf52Ba37f128230f6DF5427097B15f009;
+        address usdtAddress = 0x5Df5E5FD5396e1387A982a7A7450D0c7CEaB40B8;
         mockStableToken usdt = mockStableToken(usdtAddress);
         console.log("Using existing Mock USDT:", address(usdt));
         
@@ -59,6 +59,9 @@ contract DeployFactoryWithProperties is Script {
             uint256 apy = 5 + (i % 3); // 5%, 6%, 7%
             uint256 yieldRate = calculateYieldRate(values[i], supplies[i], apy);
             
+            // First 4 properties start in 2 hours, last 4 start in 8 hours
+            uint256 startTime = i < 4 ? block.timestamp + 2 hours : block.timestamp + 8 hours;
+            
             address propertyAddress = tokenizer.tokenizeProperty(
                 usdtAddress,
                 names[i],
@@ -66,11 +69,16 @@ contract DeployFactoryWithProperties is Script {
                 values[i],
                 supplies[i],
                 yieldRate,
-                block.timestamp + 3600, // 1 hour from now
+                startTime,
                 landTypes[i]
             );
             
             console.log("Property", i + 1, ":", propertyAddress);
+            if (i < 4) {
+                console.log("  Start time: 2 hours from deployment");
+            } else {
+                console.log("  Start time: 8 hours from deployment");
+            }
         }
         
         // Mint test tokens
