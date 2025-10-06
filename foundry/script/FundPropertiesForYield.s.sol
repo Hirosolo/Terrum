@@ -13,16 +13,17 @@ interface ILand {
 contract FundPropertiesForYield is Script {
     address constant USDT_ADDRESS = 0x5Df5E5FD5396e1387A982a7A7450D0c7CEaB40B8;
     
-    // All deployed property addresses on U2U testnet
+    // All deployed property addresses on U2U testnet (Updated October 6, 2025)
     address[] public propertyAddresses = [
-        0xC6141Ff111AeB43731EC2d528E779175Ecdd818b, // Property 1 - Saigon Pearl Residence
-        0x811CFbb8d921DfBF0e24c922EE1Bca3cc4b91c96, // Property 2 - Hanoi Horizon Towers
-        0x20C6924E9A2831FD58aa10cFb9b782A31865b470, // Property 3 - Da Nang Marina Bay
-        0xEA2D22e92b8a2B7ed4cfA7C92a92F6b2D519c740, // Property 4 - Nha Trang Skyline
-        0xBeE606a6c95A4B93EcccCA6aA9009F4cB5D07c45, // Property 5 - Mekong Riverside Villas
-        0xD09D0800747F245350e5DE632b688f3a6667aAD9, // Property 6 - Hue Imperial Garden
-        0xa3085bBc40168Ca4295e567a8a1c16470CD89F8D, // Property 7 - Phu Quoc Oceanfront Estate
-        0xa3628A37656aaEedF8BaA6B8A129731Fd62E707B  // Property 8 - Sapa Highland Retreat
+        0xf476D12Dd460ee9D48ED7d95234D8F2a5C894e99, // Property 1 - Saigon Pearl Residence
+        0xFC7cf639b8168Ce8715F788887B731A244c5885E, // Property 2 - Hanoi Horizon Towers
+        0x4A0e3FCADBA7c97F9AC10aB7Bc9B32a3eF754b76, // Property 3 - Da Nang Marina Bay
+        0x7Fa2E1f819047033971C9E282148c8744AA9FE3A, // Property 4 - Nha Trang Skyline
+        0xb5C684098b5295f131fb50A377cf4FC3831dd8c9, // Property 5 - Mekong Riverside Villas
+        0xf9F560e8EBB7B5Dc3C4AfACF860a98cA44DFe01c, // Property 6 - Hue Imperial Garden
+        0x19052aC0EF38517C1C4Fcf02CCf37807dcEE864F, // Property 7 - Phu Quoc Oceanfront Estate
+        0xB2a5Aa1629C176F97Dc5fA117D9075Ac4a3fFC63, // Property 8 - Sapa Highland Retreat
+        0xaC0eF002C9bbF33ee88C0D042733F9F4abd3dB28  // Property 9 - Saigon Gateway (NEW)
     ];
     
     function run() external {
@@ -64,7 +65,7 @@ contract FundPropertiesForYield is Script {
         }
         
         console.log("\n=== SUCCESS ===");
-        console.log("All 8 properties have been funded with USDT for yield testing!");
+        console.log("All 9 properties have been funded with USDT for yield testing!");
     }
     
     // Helper function to fund a single property

@@ -15,7 +15,8 @@ export const PROPERTY_ADDRESSES = [
   "0xb5C684098b5295f131fb50A377cf4FC3831dd8c9", // Property 5 - Mekong Riverside Villas (6% APY - starts in ~84min)
   "0xf9F560e8EBB7B5Dc3C4AfACF860a98cA44DFe01c", // Property 6 - Hue Imperial Garden (7% APY - starts in ~100min)
   "0x19052aC0EF38517C1C4Fcf02CCf37807dcEE864F", // Property 7 - Phu Quoc Oceanfront Estate (5% APY - starts in ~117min)
-  "0xB2a5Aa1629C176F97Dc5fA117D9075Ac4a3fFC63"  // Property 8 - Sapa Highland Retreat (6% APY - starts in ~134min)
+  "0xB2a5Aa1629C176F97Dc5fA117D9075Ac4a3fFC63", // Property 8 - Sapa Highland Retreat (6% APY - starts in ~134min)
+  "0xaC0eF002C9bbF33ee88C0D042733F9F4abd3dB28"  // Property 9 - Saigon Gateway (6% APY - active for minting now!)
 ] as const;
 
 // Token metadata for Mock Stable Token
@@ -115,6 +116,15 @@ export const PROPERTY_METADATA: { [key: string]: {
     galleryImages: ["/image-Property22.jpg", "/image-Property23.jpg", "/image-Property24.jpg"],
     description: "Mountain retreat resort offering breathtaking terraced landscape views, authentic ethnic culture experiences, and cool highland climate.",
     features: ["Mountain Views", "Terraced Landscapes", "Cultural Immersion", "Trekking Access", "Cool Climate"]
+  },
+  "0xaC0eF002C9bbF33ee88C0D042733F9F4abd3dB28": {
+    name: "Saigon Gateway",
+    location: "District 1, Ho Chi Minh City",
+    type: "Residential",
+    image: "/image-Property1.jpg",
+    galleryImages: ["/image-Property1.jpg", "/image-Property2.jpg", "/image-Property3.jpg"],
+    description: "Premium mixed-use development in the heart of Saigon's central business district, offering luxury apartments with commercial spaces and excellent connectivity.",
+    features: ["Central Location", "Mixed-Use", "Business District", "Metro Access", "Shopping Complex", "Premium Amenities"]
   }
 };
 
