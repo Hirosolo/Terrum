@@ -51,9 +51,10 @@ export default function Faucet() {
             method: "wallet_switchEthereumChain",
             params: [{ chainId: u2uTestnetChainId }],
           });
-        } catch (switchError: any) {
+        } catch (switchError) {
           // If the chain hasn't been added to the wallet, add it
-          if (switchError.code === 4902) {
+          const walletError = switchError as { code?: number };
+          if (walletError.code === 4902) {
             try {
               await window.ethereum.request({
                 method: "wallet_addEthereumChain",
@@ -71,7 +72,7 @@ export default function Faucet() {
                   },
                 ],
               });
-            } catch (addError) {
+            } catch {
               alert("Failed to add U2U testnet to your wallet");
               return;
             }
