@@ -20,7 +20,8 @@ contract DeployFactoryWithProperties is Script {
         console.log("Current block:", block.number);
         
         // Use existing Mock USDT
-        address usdtAddress = 0x5Df5E5FD5396e1387A982a7A7450D0c7CEaB40B8;
+        // address usdtAddress = 0x5Df5E5FD5396e1387A982a7A7450D0c7CEaB40B8; -- testnet
+        address usdtAddress = 0x1638ac963dA5d466d928289852c047A9d2ad7047;
         mockStableToken usdt = mockStableToken(usdtAddress);
         console.log("Using existing Mock USDT:", address(usdt));
         

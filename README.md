@@ -145,7 +145,27 @@ Terrum is built natively on U2U's advanced blockchain infrastructure, leveraging
 
 ## 📜 Contract Addresses
 
-Here are the core contract addresses deployed on the **U2U Testnet (Chain ID: 2484)**:
+### U2U Mainnet Deployment (Chain ID: 39)
+
+🎉 **Production deployment on U2U Mainnet for real-world usage:**
+
+| **Contract**                | **Address**                                   |
+|-----------------------------|-----------------------------------------------|
+| Mock USDT                   | `0x1638ac963dA5d466d928289852c047A9d2ad7047` |
+| Land Tokenizer Factory      | `0xFB9D4e5d3F4f8b089739B9D2f03e21d37f87e536` |
+| Marketplace Contract        | `0x251630924c61C7612d5aBdad1B37c8589a099011` |
+
+**Mainnet Network Details:**
+- **Chain ID:** 39
+- **RPC URL:** `https://rpc-mainnet.u2u.xyz`
+- **Block Explorer:** U2U Mainnet Explorer
+- **Status:** 🟢 **Live Production Environment**
+
+---
+
+### U2U Testnet Development (Chain ID: 2484)
+
+Development and testing environment:
 
 | **Contract**                | **Address**                                   |
 |-----------------------------|-----------------------------------------------|
@@ -153,7 +173,7 @@ Here are the core contract addresses deployed on the **U2U Testnet (Chain ID: 24
 | Land Tokenizer Factory      | `0x5A6C7b515328E1598d3F1B62E2404f8B525D4E86` |
 | Marketplace Contract        | `0x51163fF3ac2A2F10a25DFb226FCF2AD5D4ab4e95` |
 
-**Network Details:**
+**Testnet Network Details:**
 - **Chain ID:** 2484
 - **RPC URL:** `https://rpc-nebulas-testnet.uniultra.xyz`
 - **Block Explorer:** U2U Nebulas Testnet Explorer
